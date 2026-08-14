@@ -109,6 +109,7 @@ resource "aws_instance" "app" {
 # 憑證走 EC2 instance role（或環境變數），不寫進 code。
 # 安全預設：擋掉所有 public access，物件只能靠 IAM / signed URL 取用。
 resource "aws_s3_bucket" "media" {
+  count  = var.enable_media_bucket ? 1 : 0
   bucket = var.media_bucket_name
 
   tags = {
@@ -118,7 +119,8 @@ resource "aws_s3_bucket" "media" {
 }
 
 resource "aws_s3_bucket_public_access_block" "media" {
-  bucket = aws_s3_bucket.media.id
+  count  = var.enable_media_bucket ? 1 : 0
+  bucket = aws_s3_bucket.media[0].id
 
   block_public_acls       = true
   block_public_policy     = true

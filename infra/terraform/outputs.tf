@@ -9,6 +9,6 @@ output "ssh_command" {
 }
 
 output "media_bucket_name" {
-  description = "media S3 bucket 名 — 填到 backend 的 AWS_STORAGE_BUCKET_NAME。"
-  value       = aws_s3_bucket.media.bucket
+  description = "media S3 bucket 名 — 填到 backend 的 AWS_STORAGE_BUCKET_NAME（沒開就是空的）。"
+  value       = var.enable_media_bucket ? aws_s3_bucket.media[0].bucket : ""
 }

@@ -1,14 +1,20 @@
 # 複製成 terraform.tfvars 後填入實際值（terraform.tfvars 已被 gitignore）。
-# 這裡只放「非機密」設定；真正的雲憑證走環境變數（見 README / DEPLOY）。
+# 這裡只放「非機密」設定；真正的雲憑證走環境變數（見 DEPLOY.md）。
 
-project_name     = "lean-stack"
-aws_region       = "ap-northeast-1"
-instance_type    = "t3.small"
+project_name  = "lean-erp"
+aws_region    = "ap-northeast-1" # Tokyo
+instance_type = "t3.small"
 
 # 先在 AWS console 建好一個 EC2 Key Pair，把名字填這裡。
-key_name         = "your-ec2-keypair-name"
+key_name = "your-ec2-keypair-name"
 
-# 強烈建議鎖成你自己的對外 IP，例如 "203.0.113.7/32"，別用 0.0.0.0/0。
-ssh_cidr         = "0.0.0.0/0"
+# 誰可以 SSH 進這台機器。查自己的 IP：curl ifconfig.me
+# 填 0.0.0.0/0 會被 terraform 擋下來——那等於全世界都能敲你的 22 port。
+ssh_cidr = "203.0.113.7/32"
 
 root_volume_size = 30
+
+# 上傳檔案用的 S3。v1 三張表沒有上傳，預設不開。
+# 真的要開再改 true，並填一個【全世界沒人用過】的名字。
+# enable_media_bucket = true
+# media_bucket_name   = "lean-erp-media-你的名字"
