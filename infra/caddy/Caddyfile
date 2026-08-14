@@ -1,0 +1,32 @@
+# Caddy：服務 admin 前端 static build ＋ 反代 /api → backend:8000。
+#
+# 憑證怎麼來：填了真網域，Caddy 會自己去 Let's Encrypt 申請、到期前自己續期。
+# 不用 certbot、不用 cron、不用續期後 reload —— 這是它跟 nginx 差最多的地方。
+#
+# SITE_ADDRESS（在 infra/.env.prod 設）：
+#   - 本機試跑：不設就好，預設 :80，純 HTTP，方便 smoke test。
+#   - 正式：erp.你的網域.com  → 自動 HTTPS，80 自動轉 443。
+#
+# ⚠ Cloudflare 的網域請設成 DNS-only（灰雲）。
+#   開了代理（橘雲）會擋掉 Caddy 的憑證挑戰，那時才需要 API token 走 DNS-01
+#   （還要自己 build 含 Cloudflare 模組的 image）。內部後台不需要 CDN，灰雲就好。
+
+{$SITE_ADDRESS} {
+	# /api 反代到後端（compose 內網用 service 名連得到）。
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# 其餘都交給 admin 前端；SPA：找不到實體檔就回 index.html，交給前端 router。
+	handle {
+		root * /srv/admin
+		try_files {path} /index.html
+		file_server
+	}
+
+	# 媒體檔（上傳）prod 走 S3，由 S3 直接服務，所以這裡不處理 /media。
+	# 若改用本機檔案系統（USE_S3=False），在這裡加一段 handle /media/* 並把 volume 掛進來。
+
+	encode gzip
+	log
+}

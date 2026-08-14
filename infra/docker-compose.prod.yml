@@ -1,5 +1,5 @@
 # 正式環境「整套」編排，跑在 terraform 開的那台 EC2 上。
-#   postgres + redis + backend(gunicorn/uvicorn) + celery-worker + nginx(服務 admin 前端 + 反代 /api)
+#   postgres + redis + backend(gunicorn/uvicorn) + celery-worker + caddy(服務 admin 前端 + 反代 /api，自動 HTTPS)
 # 與 local compose「同構」：一樣的 redis + worker，一樣不開 eager（dev/prod parity）。
 #
 # 跑法（見 infra/DEPLOY.md / infra/scripts/deploy.sh）：
@@ -26,7 +26,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    # 內部服務：不對外開 port，也不經 nginx；backend / worker 走內網連 redis。
+    # 內部服務：不對外開 port，也不經 caddy；backend / worker 走內網連 redis。
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -39,7 +39,7 @@ services:
       context: ../apps/lean-backend
     env_file:
       - .env.prod
-    # 不對外開 port：只在 compose 內網讓 nginx 連到 backend:8000。
+    # 不對外開 port：只在 compose 內網讓 caddy 連到 backend:8000。
     expose:
       - "8000"
     depends_on:
@@ -63,19 +63,26 @@ services:
         condition: service_healthy
     restart: always
 
-  nginx:
-    image: nginx:1.27-alpine
+  caddy:
+    image: caddy:2-alpine
     ports:
       - "80:80"
-      # 443 先預留；上 TLS 時再掛憑證 + 解開 nginx.conf 的 https server block。
       - "443:443"
+    environment:
+      # 空的＝本機試跑（純 HTTP :80）；填真網域＝自動申請 HTTPS 憑證。
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      # admin 前端的 build 產物（vite build 後的 dist/），用唯讀掛進來給 nginx 服務。
-      - ../apps/lean-admin/dist:/usr/share/nginx/lean-admin:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # admin 前端的 build 產物（vite build 後的 dist/），唯讀掛進來給 Caddy 服務。
+      - ../apps/lean-admin/dist:/srv/admin:ro
+      # 憑證與 ACME 帳號要留著，不然每次重啟都重新申請（會撞 Let's Encrypt 速率限制）。
+      - caddy-data:/data
+      - caddy-config:/config
     depends_on:
       - backend
     restart: always
 
 volumes:
   lean-stack-pg-data-prod:
+  caddy-data:
+  caddy-config:

@@ -2,7 +2,7 @@
 # lean 單機部署腳本。在「已 terraform apply 出來、裝好 docker」的伺服器上跑，
 # 或本機指向遠端 docker context 時也行。
 #
-# 做的事：build 前端 → build/起後端+nginx+db → 跑 migrate。
+# 做的事：build 前端 → build/起後端+caddy+db → 跑 migrate。
 # 從 repo 根目錄執行：  bash infra/scripts/deploy.sh
 set -euo pipefail
 
@@ -18,11 +18,11 @@ if [ ! -f infra/.env.prod ]; then
   exit 1
 fi
 
-# 1. build admin 前端的靜態檔（nginx 會掛 dist/ 進去服務）。
+# 1. build admin 前端的靜態檔（Caddy 會掛 dist/ 進去服務）。
 echo "==> building frontend (lean-admin)"
 ( cd apps/lean-admin && npm ci && npm run build )
 
-# 2. build image 並啟動整套（postgres + backend + nginx）。
+# 2. build image 並啟動整套（postgres + backend + caddy）。
 echo "==> docker compose up -d --build"
 $COMPOSE up -d --build
 

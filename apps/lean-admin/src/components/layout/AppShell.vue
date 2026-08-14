@@ -122,13 +122,13 @@ onBeforeUnmount(() => {
            整條側欄共用同一條「icon 軌」。寬度 w-44 是抓「6 字標籤 + 品牌字」的下限一起定的。 -->
       <button
         type="button"
-        title="智能萬事屋 · 排班櫃檯"
+        title="lean-erp · 報價成交"
         class="flex h-14 shrink-0 cursor-pointer items-center gap-3 overflow-hidden border-b border-border text-left transition-opacity hover:opacity-70"
         :class="expanded ? 'justify-start px-5' : 'justify-center'"
         @click="$router.push('/')"
       >
-        <img :src="bearBadge" alt="智能萬事屋" class="size-8 shrink-0" />
-        <span v-show="expanded" class="whitespace-nowrap text-[15px] font-semibold text-foreground">智能萬事屋</span>
+        <img :src="bearBadge" alt="lean-erp" class="size-8 shrink-0" />
+        <span v-show="expanded" class="whitespace-nowrap text-[15px] font-semibold text-foreground">lean-erp</span>
       </button>
 
       <!-- Menu -->
@@ -192,7 +192,7 @@ onBeforeUnmount(() => {
         </template>
       </nav>
 
-      <div v-show="expanded" class="p-4 text-xs text-muted-foreground">智能萬事屋 · 排班櫃檯</div>
+      <div v-show="expanded" class="p-4 text-xs text-muted-foreground">lean-erp · 報價成交</div>
     </aside>
 
     <!-- ── 右側：頂部 bar + 內容 ─────────────────────── -->
