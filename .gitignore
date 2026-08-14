@@ -1,0 +1,24 @@
+# 根層級的保險絲；各 app / infra 另有自己的 .gitignore。
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+dist/
+
+# IDE
+.idea/
+
+# secrets — 任何 .env 變體都不進版控（只保留 *.example）
+.env
+.env.*
+!.env.example
+!.env.prod.example
+
+# terraform：state 與本機憑證/變數永不進版控
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!*.tfvars.example
+media/

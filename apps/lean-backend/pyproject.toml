@@ -1,0 +1,24 @@
+[project]
+name = "lean-stack-backend"
+version = "0.1.0"
+description = "lean-stack 教學 sandbox 後端（Django 6 + django-ninja + Postgres）"
+readme = "README.md"
+requires-python = ">=3.12"
+# 教學版只留「能跑起來 + media 上傳 + 非同步任務」的最小依賴。
+# 相較 top-erp 刻意砍掉：django-redis / ninja-extra /
+# pyjwt / openpyxl / pillow / dbbackup / django-extensions 等。
+dependencies = [
+    "django>=6.0",
+    "django-ninja>=1.6",
+    "django-environ>=0.12",
+    "django-cors-headers>=4.9",
+    "psycopg2-binary>=2.9",
+    "gunicorn>=23.0",
+    "uvicorn[standard]>=0.38",
+    # media 上傳：本機用檔案系統、prod 用 S3（USE_S3 切換，見 settings.py）
+    "django-storages[s3]>=1.14",
+    "boto3>=1.34",
+    # 非同步任務：celery worker + redis broker（local 與 prod 同構，見 core/celery.py）
+    "celery>=5.3",
+    "redis>=5.0",
+]

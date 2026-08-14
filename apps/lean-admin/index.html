@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- favicon = 側欄同一顆熊頭（public/ 內的檔案直接掛在網站根目錄）。 -->
+    <link rel="icon" type="image/png" href="/bearhead.png" />
+    <title>智能萬事屋 · 排班櫃檯</title>
+    <!-- 開機啟動畫面：在 JS bundle 載入前就先畫（純 HTML/CSS），Vue 掛載後會取代它。
+         細環繞著熊頭轉、熊頭輕輕呼吸——跟 App 內的 LoadingState 同一個視覺。 -->
+    <style>
+      #app-splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+        background: #ffffff;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+      }
+      #app-splash .ring { position: relative; display: flex; width: 64px; height: 64px; align-items: center; justify-content: center; }
+      #app-splash .ring::before {
+        content: ''; position: absolute; inset: 0; border-radius: 9999px;
+        border: 2px solid rgb(226 232 240); border-top-color: rgb(15 23 42);
+        animation: app-spin 0.7s linear infinite;
+      }
+      #app-splash img { width: 36px; height: 36px; animation: app-pulse 1.5s ease-in-out infinite; }
+      #app-splash p { margin: 0; font-size: 14px; color: rgb(100 116 139); }
+      @keyframes app-spin { to { transform: rotate(360deg); } }
+      @keyframes app-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+  </head>
+  <body>
+    <!-- Vue 會把整個 app 掛到這個 #app 節點上（掛載時會取代下面的啟動畫面）。 -->
+    <div id="app">
+      <div id="app-splash">
+        <div class="ring"><img src="/bearhead.png" alt="" /></div>
+        <p>載入中…</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+# NEVER commit state（含明文輸出 / 可能含敏感值）或本機 provider 快取。
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# 真實變數值不進版控；只保留 *.tfvars.example
+*.tfvars
+!*.tfvars.example
