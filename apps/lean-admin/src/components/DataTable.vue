@@ -55,7 +55,7 @@ function syncHead() {
       </Table>
     </div>
     <!-- 表身（垂直捲軸只在這裡；橫捲同步表頭）-->
-    <div ref="bodyScroll" class="scroll-thin min-h-0 flex-1 overflow-x-auto overflow-y-scroll" @scroll="syncHead">
+    <div ref="bodyScroll" class="scroll-thin bg-card min-h-0 flex-1 overflow-x-auto overflow-y-scroll" @scroll="syncHead">
       <Table class="table-fixed">
         <colgroup>
           <col v-for="(col, i) in columns" :key="i" :class="col.width" />

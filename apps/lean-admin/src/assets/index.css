@@ -22,7 +22,7 @@
   /* 全中性黑白（原本 shadcn slate：白底/白卡/冷灰/近黑字）。
      品牌色只出現在 logo（側欄熊頭，圖檔獨立於 token）——UI 本身不加品牌紅。
      換主題只改這裡。 */
-  --background: oklch(1 0 0);
+  --background: oklch(0.96 0.004 247.858);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);

@@ -12,7 +12,7 @@ import { ref, watch, onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 // 選單 icon 一律取「同一套 lucide、視覺重量相近的實心輪廓物件」——參 top-admin 的
 // constants/icons.js（避免混入 Activity 那種稀疏脈衝線，破壞整體一致性）。
-import { CalendarCheck, Users, ChevronDown, ChevronsLeft, ChevronsRight, User } from '@lucide/vue'
+import { CalendarCheck, Users, ChevronDown, ChevronsLeft, ChevronsRight, User, FileText } from '@lucide/vue'
 import { getHealth } from '@/api'
 import HealthBadge from '@/components/HealthBadge.vue'
 import Toaster from '@/components/Toaster.vue'
@@ -24,6 +24,7 @@ import bearBadge from '@/assets/bearhead_badge.png'
 // 三張表的頁面照 intents/ 逐塊長出來後掛在這。
 const nav = [
   { to: '/', label: '首頁', icon: Users },
+  { to: '/quotations', label: '報價單', icon: FileText },
 ]
 
 const route = useRoute()
@@ -80,7 +81,13 @@ function toggle() {
 }
 
 function handleResize() {
-  if (isMobile() && expanded.value) expanded.value = false
+  // 小螢幕自動收；回到大螢幕要把使用者原本的偏好放回來——不然載入途中視窗短暫變窄
+  // （像預覽面板拉開的那一瞬間）就會把側欄永久收起，而且還蓋掉 localStorage 的選擇。
+  if (isMobile()) {
+    if (expanded.value) expanded.value = false
+  } else if (localStorage.getItem(STORAGE_KEY) !== 'false') {
+    expanded.value = true
+  }
 }
 
 // ── 後端連線狀態（殼掛載時打一次 health）──
@@ -192,7 +199,7 @@ onBeforeUnmount(() => {
         </template>
       </nav>
 
-      <div v-show="expanded" class="p-4 text-xs text-muted-foreground">lean-erp · 報價成交</div>
+      <div v-show="expanded" class="overflow-hidden p-4 text-xs whitespace-nowrap text-muted-foreground">lean-erp · 報價成交</div>
     </aside>
 
     <!-- ── 右側：頂部 bar + 內容 ─────────────────────── -->

@@ -8,6 +8,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
+  // 原型（點畫面站）：假資料、簽架構圖前可整檔重寫
+  { path: '/quotations', name: 'quotations', component: () => import('@/views/QuotationListView.vue') },
+  { path: '/quotations/new', name: 'quotation-new', component: () => import('@/views/QuotationNewView.vue') },
   // 新頁面路由加在這（客戶 / 報價單 / 訂單照 intents/ 逐塊長出來）
 ]
 
