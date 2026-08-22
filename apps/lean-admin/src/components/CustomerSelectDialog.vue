@@ -98,12 +98,12 @@ function pick(row) {
 
 // ── 新客戶快速建立 ──
 const showNew = ref(false)
-const newC = ref({ name: '', email: '', phone: '' })
+const newC = ref({ name: '', phone: '' })
 const newErr = ref('')
 async function createNew() {
   newErr.value = ''
-  if (!newC.value.name || !newC.value.email) {
-    newErr.value = '姓名與 email 必填'
+  if (!newC.value.name || !newC.value.phone) {
+    newErr.value = '姓名與電話必填'
     return
   }
   try {
@@ -127,7 +127,7 @@ async function createNew() {
         <div class="flex flex-1">
           <Input
             v-model="searchInput"
-            placeholder="搜尋客戶姓名或 電話…"
+            placeholder="搜尋客戶姓名或電話…"
             class="rounded-r-none focus-visible:z-10"
             @keyup.enter="search"
           />
@@ -142,8 +142,7 @@ async function createNew() {
       <div v-if="showNew" class="bg-muted flex flex-col gap-2 rounded-md p-3">
         <div class="flex gap-2">
           <Input v-model="newC.name" placeholder="姓名" />
-          <Input v-model="newC.email" placeholder="email" />
-          <Input v-model="newC.phone" placeholder="電話（選填）" />
+          <Input v-model="newC.phone" placeholder="電話" />
           <Button class="shrink-0" @click="createNew">建立並選定</Button>
         </div>
         <p v-if="newErr" class="text-destructive text-sm">{{ newErr }}</p>
@@ -155,7 +154,6 @@ async function createNew() {
           <TableHeader>
             <TableRow>
               <TableHead>姓名</TableHead>
-              <TableHead>email</TableHead>
               <TableHead class="w-32">電話</TableHead>
             </TableRow>
           </TableHeader>
@@ -167,11 +165,10 @@ async function createNew() {
               @click="pick(c)"
             >
               <TableCell class="font-medium">{{ c.name }}</TableCell>
-              <TableCell class="text-muted-foreground">{{ c.email }}</TableCell>
               <TableCell class="tabular-nums">{{ c.phone || '—' }}</TableCell>
             </TableRow>
             <TableRow v-if="!loading && !rows.length">
-              <TableCell colspan="3" class="text-muted-foreground py-8 text-center">
+              <TableCell colspan="2" class="text-muted-foreground py-8 text-center">
                 {{ keyword ? '找不到符合的客戶——按「＋新客戶」建一位' : '還沒有客戶' }}
               </TableCell>
             </TableRow>

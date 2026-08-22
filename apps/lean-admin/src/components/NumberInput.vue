@@ -37,7 +37,7 @@ function onInput(e) {
 
 <template>
   <div
-    class="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 inline-flex h-9 items-center overflow-hidden rounded-md border focus-within:ring-[3px]"
+    class="border-input bg-card focus-within:border-ring focus-within:ring-ring/50 inline-flex h-9 items-center overflow-hidden rounded-md border focus-within:ring-[3px]"
     :class="disabled && 'bg-muted cursor-not-allowed opacity-60'"
     :style="{ width }"
   >

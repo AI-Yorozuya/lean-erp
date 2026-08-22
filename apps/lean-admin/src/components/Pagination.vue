@@ -73,7 +73,7 @@ const cellBase =
       <span class="relative inline-flex items-center">
         <select
           :value="pageSize"
-          class="border-input bg-background focus-visible:ring-ring appearance-none rounded-md border py-1 pr-7 pl-2.5 text-sm tabular-nums focus-visible:ring-1 focus-visible:outline-none"
+          class="border-input bg-card focus-visible:ring-ring appearance-none rounded-md border py-1 pr-7 pl-2.5 text-sm tabular-nums focus-visible:ring-1 focus-visible:outline-none"
           @change="emit('update:pageSize', Number($event.target.value))"
         >
           <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>

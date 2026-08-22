@@ -20,7 +20,7 @@ const emit = defineEmits(['update:modelValue'])
 const triggerClass = computed(() =>
   props.bare
     ? 'hover:bg-muted/30 focus:bg-muted/30 inline-flex h-9 w-full cursor-pointer items-center gap-2 px-3 text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60'
-    : 'border-input bg-background hover:bg-muted/50 focus:border-ring focus:ring-ring/50 data-[state=open]:border-ring inline-flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border px-3 text-sm transition-colors focus:outline-none focus:ring-[3px] disabled:cursor-not-allowed disabled:opacity-60',
+    : 'border-input bg-card hover:bg-muted/50 focus:border-ring focus:ring-ring/50 data-[state=open]:border-ring inline-flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border px-3 text-sm transition-colors focus:outline-none focus:ring-[3px] disabled:cursor-not-allowed disabled:opacity-60',
 )
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
