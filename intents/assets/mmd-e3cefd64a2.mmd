@@ -1,0 +1,12 @@
+flowchart TD
+    A["① 開新報價單：挑客戶<br/>（清單沒有→填名字＋電話當場建）"] --> B["② 填明細：挑商品或自由填<br/>總額自動算、不給手改"]
+    B --> C["③ 送出：產生 PDF 自己傳（LINE／email）<br/>狀態 草擬→已送出，蓋送出日"]
+    C --> D["④ 盯已送出的報價單<br/>掛越久排越上、越顯眼"]
+    D --> E["⑤ 點結果"]
+    E -->|成交| F["⑥ 轉成訂單<br/>待處理 → 處理中 → 完成（管到交付）"]
+    E -->|沒成| G["沒成：留在列表可查<br/>（失單原因暫不實作）"]
+    D -.搜客戶或品名.-> H["⑦ 查舊價：翻出歷次報價單<br/>（搜尋在列表裡）"]
+    classDef order fill:#E1F5EE,stroke:#0F6E56,color:#04342C
+    classDef side fill:#F1EFE8,stroke:#888780,color:#2C2C2A
+    class F order
+    class G,H side
