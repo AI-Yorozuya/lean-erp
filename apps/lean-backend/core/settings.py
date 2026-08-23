@@ -47,16 +47,27 @@ else:
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.auth',
+    'django.contrib.sessions',   # 登入用 session——登入後每個動作都記得到誰在操作
     'corsheaders',
     # 自己的 app
     'apps._common',  # 共用：抽象 model（TimeStampedModel）等
     'apps.health',
+    'apps.accounts',
+    'apps.customers',
+    'apps.products',
+    'apps.quotations',
 ]
+
+# 自訂 User（帳號／密碼雜湊／顯示名稱）——起手就換，事後換是 Django 最痛的手術。
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # 要放在 CommonMiddleware 之前
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
