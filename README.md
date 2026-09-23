@@ -8,6 +8,10 @@
 
 先看 [START.md](START.md) 把環境裝起來（一次性，約半小時）。已經有 Claude Code＋Docker 的人跳過。
 
+## 方法在這一頁
+
+[`docs/意圖驅動設計.html`](docs/意圖驅動設計.html)：意圖收斂 → 架構管理 → 程式開發一頁看完，下半頁是拿著跑的——貼 prompt、照著說、勾著走。這個 repo 的 `intents/` 就是照這一頁做出來的。系統總覽由 `intents/gen-系統總覽.py` 從 `intents/` 的 md 產生。
+
 ## 這裡有什麼
 
 ```
