@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>報價系統｜原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 報價系統頁面原型（3-3 定的頁：每種資料列表頁＋詳細頁，選取用的對話框；v2 加業績頁）。
+   外殼與 token 照 lean-admin；資料照 1_素材庫/案例/3C報價_意圖收斂實錄_20260907。資料只存在記憶體，重新整理就回到初始。 */
+:root{--radius:.375rem;--background:oklch(.96 .004 247.858);--foreground:oklch(.129 .042 264.695);--card:oklch(1 0 0);--muted:oklch(.968 .007 247.896);--muted-foreground:oklch(.554 .046 257.417);--primary:oklch(.208 .042 265.755);--primary-foreground:oklch(.984 .003 247.858);--border:oklch(.929 .013 255.508);--destructive:oklch(.577 .245 27.325);--r-md:calc(var(--radius) - 2px);--r-lg:var(--radius);--shadow-sm:0 1px 3px 0 rgb(0 0 0/.1),0 1px 2px -1px rgb(0 0 0/.1)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--background);color:var(--foreground);font:14px/1.5 Inter,-apple-system,"PingFang TC","Noto Sans TC",sans-serif}
+a{color:inherit;text-decoration:none}button{font:inherit}
+.shell{display:flex;height:100vh;overflow:hidden}
+aside{width:176px;flex:none;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--card)}
+.brand{height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--border)}
+.brand i{width:32px;height:32px;border-radius:8px;background:var(--primary);color:var(--primary-foreground);display:grid;place-items:center;font-size:13px;font-weight:700;font-style:normal}
+.brand b{font-size:15px;font-weight:600}
+nav{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:2px}
+nav .grp{padding:10px 12px 4px;font-size:12px;color:var(--muted-foreground)}
+nav a{display:block;padding:8px 12px 8px 24px;border-radius:var(--r-md);color:var(--muted-foreground);position:relative}
+nav a:hover{background:var(--muted);color:var(--foreground)}
+nav a.on{background:var(--muted);color:var(--foreground);font-weight:500}
+nav a.on::before{content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);width:3px;height:16px;border-radius:99px;background:var(--primary)}
+.foot{padding:16px;font-size:12px;color:var(--muted-foreground)}
+main{flex:1;min-width:0;overflow:auto;padding:20px;background:#fbfcfe}
+h1{font-size:18px;line-height:1;font-weight:600;letter-spacing:-.01em;margin:4px 0 20px;display:flex;align-items:center;gap:10px}
+.card{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow-sm)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 20px}
+.search{display:flex;width:288px}
+.search input{flex:1;height:36px;border:1px solid var(--border);border-right:0;border-radius:var(--r-md) 0 0 var(--r-md);padding:0 12px;font:inherit;outline:none}
+.search input:focus{border-color:oklch(.704 .04 256.788)}
+.search span{width:36px;height:36px;border:1px solid var(--border);border-radius:0 var(--r-md) var(--r-md) 0;display:grid;place-items:center;color:var(--muted-foreground)}
+.btn{height:36px;padding:0 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--card);color:var(--foreground);cursor:pointer;box-shadow:var(--shadow-sm);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--muted)}
+.btn.pri{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.btn.pri:hover{opacity:.9}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 20px;text-align:left;border-top:1px solid var(--border)}
+th{color:var(--muted-foreground);font-weight:500;font-size:13px}
+td.r,th.r{text-align:right}td.c,th.c{text-align:center}
+tbody tr{cursor:pointer}tbody tr:hover td{background:#f8fafc}
+.num{font-variant-numeric:tabular-nums}
+.pager{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);color:var(--muted-foreground);font-size:13px}
+.badge{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;border:1px solid var(--border);color:var(--muted-foreground)}
+.badge.sent{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.form{padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 24px}
+.f label{display:block;font-size:13px;color:var(--muted-foreground);margin-bottom:6px}
+.f .v{min-height:36px;display:flex;align-items:center;gap:8px}
+.f input{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--r-md);padding:0 12px;font:inherit}
+.f input:disabled{background:var(--muted);color:var(--foreground)}
+.pick{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--r-md);padding:0 12px;display:flex;align-items:center;justify-content:space-between;background:var(--card);cursor:pointer}
+.pick span.ph{color:var(--muted-foreground)}
+.sec{padding:0 20px 8px;display:flex;justify-content:space-between;align-items:center}
+.sec b{font-weight:600}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:var(--r-md)}
+.qty button{width:28px;height:28px;border:0;background:none;cursor:pointer;color:var(--muted-foreground)}
+.qty span{min-width:36px;text-align:center}
+.tot{display:flex;justify-content:flex-end;gap:32px;padding:14px 20px;border-top:1px solid var(--border)}
+.tot b{font-size:18px}
+.actions{display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--border)}
+.err{color:var(--destructive);font-size:13px;margin-right:auto;align-self:center}
+.mask{position:fixed;inset:0;background:rgb(0 0 0/.4);display:grid;place-items:center;z-index:50}
+.dlg{width:520px;max-width:calc(100vw - 32px);background:var(--card);border-radius:var(--r-lg);box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)}
+.dlg h2{font-size:16px;margin:0;padding:18px 20px 4px;font-weight:600}
+.dlg .bar{padding:12px 20px}
+.dlg .actions{padding:12px 20px}
+.bars{display:flex;align-items:flex-end;gap:32px;height:220px;padding:24px 40px 0}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%}
+.bars i{display:block;width:56px;background:var(--primary);border-radius:4px 4px 0 0}
+.bars small{color:var(--muted-foreground)}
+.note{color:var(--muted-foreground);font-size:13px}
+</style></head>
+<body>
+<div class="shell">
+<aside>
+  <a class="brand" href="#/quotes"><i>報</i><b>報價系統</b></a>
+  <nav>
+    <div class="grp">銷售管理</div>
+    <a href="#/customers" data-nav="customers">客戶</a>
+    <a href="#/products" data-nav="products">商品</a>
+    <a href="#/quotes" data-nav="quotes">報價單</a>
+    <div class="grp">報表分析</div>
+    <a href="#/stats" data-nav="stats">業績</a>
+  </nav>
+  <div class="foot">原型 · 業務 林郁婷</div>
+</aside>
+<main id="app"></main>
+</div>
+<div id="modal"></div>
+<script>
+(function(){
+const fmt = n => n.toLocaleString('en-US');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const plain = r => esc(r.join(' ').replace(/<[^>]*>/g, ''));
+const DB = {
+  customers: [
+    { id: 1, name: '弘遠科技', contact: '陳志明' },
+    { id: 2, name: '立群工程', contact: '王美玲' },
+    { id: 3, name: '安橋資訊', contact: '李建宏' },
+    { id: 4, name: '南方紡織', contact: '黃淑芬' }
+  ],
+  products: [
+    { id: 1, model: 'M27F-B2', name: '27" FHD 商用螢幕', price: 10000 },
+    { id: 2, model: 'M27Q-A1', name: '27" QHD 螢幕', price: 13500 },
+    { id: 3, model: 'M24F-B1', name: '24" FHD 商用螢幕', price: 6800 },
+    { id: 4, model: 'M32U-C1', name: '32" 4K 螢幕', price: 21000 },
+    { id: 5, model: 'NB14-I5', name: '14" 商用筆電 i5', price: 28900 }
+  ],
+  quotes: [
+    { no: 'Q-20260903-004', customer: 3, date: '2026-09-03', sales: '林郁婷', state: '已送出', items: [{ product: 1, qty: 10, price: 10000 }] },
+    { no: 'Q-20260901-003', customer: 1, date: '2026-09-01', sales: '林郁婷', state: '已送出', items: [{ product: 1, qty: 20, price: 10000 }, { product: 4, qty: 1, price: 21000 }, { product: 5, qty: 1, price: 28900 }, { product: 3, qty: 1, price: 7900 }] },
+    { no: 'Q-20260715-002', customer: 2, date: '2026-07-15', sales: '林郁婷', state: '已送出', items: [{ product: 3, qty: 12, price: 7200 }] }
+  ]
+};
+const cust = id => DB.customers.find(c => c.id === id);
+const prod = id => DB.products.find(p => p.id === id);
+const total = q => q.items.reduce((n, i) => n + i.qty * i.price, 0);
+const quotesOf = c => DB.quotes.filter(q => q.customer === c.id);
+const app = document.getElementById('app'), modal = document.getElementById('modal');
+let draft = null;
+
+function listCard(cols, rows, onOpen, extra = '') {
+  return `<div class="card"><div class="bar"><div class="search"><input placeholder="搜尋" data-search><span>⌕</span></div>${extra}</div>
+  <table><thead><tr>${cols.map(c => `<th class="${c.a || ''}">${c.t}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map((r, i) => `<tr data-i="${i}" data-text="${plain(r)}">${r.map((v, k) => `<td class="${cols[k].a || ''} num">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>
+  <div class="pager"><span>共 ${rows.length} 筆</span><span>第 1 頁 / 1</span></div></div>`;
+}
+function bindList(onOpen) {
+  app.querySelectorAll('tbody tr').forEach(tr => tr.onclick = () => onOpen(+tr.dataset.i));
+  const s = app.querySelector('[data-search]');
+  if (s) s.oninput = () => app.querySelectorAll('tbody tr').forEach(tr => tr.hidden = !tr.dataset.text.includes(s.value.trim()));
+}
+
+const pages = {
+  customers() {
+    const rows = DB.customers.map(c => { const qs = quotesOf(c); return [esc(c.name), esc(c.contact), `${qs.length} 筆`, qs[0] ? qs[0].no : '—']; });
+    app.innerHTML = `<h1>客戶列表</h1>` + listCard([{ t: '客戶名稱' }, { t: '聯絡人' }, { t: '報價紀錄', a: 'r' }, { t: '最近報價' }], rows);
+    bindList(i => go(`#/customers/${DB.customers[i].id}`));
+  },
+  customer(id) {
+    const c = cust(+id), qs = quotesOf(c);
+    app.innerHTML = `<h1>客戶詳細</h1><div class="card"><div class="form">
+      <div class="f"><label>名稱</label><input id="cn" value="${esc(c.name)}"></div>
+      <div class="f"><label>聯絡人</label><input id="cc" value="${esc(c.contact)}"></div>
+      <div class="f"><label>報價紀錄</label><div class="v">${qs.length} 筆</div></div>
+      <div class="f"><label>最近一張報價</label><div class="v">${qs[0] ? `<a href="#/quotes/${qs[0].no}"><u>${qs[0].no}</u></a>` : '—'}</div></div></div>
+      <div class="actions"><span class="err" id="er"></span><button class="btn" onclick="location.hash='#/customers'">取消</button><button class="btn pri" id="sv">儲存</button></div></div>`;
+    document.getElementById('sv').onclick = () => { const n = document.getElementById('cn').value.trim(); if (!n) { document.getElementById('er').textContent = '名稱不能空白'; return; } c.name = n; c.contact = document.getElementById('cc').value.trim(); go('#/customers'); };
+  },
+  products() {
+    const rows = DB.products.map(p => [esc(p.model), esc(p.name), fmt(p.price)]);
+    app.innerHTML = `<h1>商品列表</h1>` + listCard([{ t: '型號' }, { t: '品名' }, { t: '單價', a: 'r' }], rows);
+    bindList(i => go(`#/products/${DB.products[i].id}`));
+  },
+  product(id) {
+    const p = prod(+id);
+    app.innerHTML = `<h1>商品詳細</h1><div class="card"><div class="form">
+      <div class="f"><label>型號</label><input id="pm" value="${esc(p.model)}"></div>
+      <div class="f"><label>品名</label><input id="pn" value="${esc(p.name)}"></div>
+      <div class="f"><label>單價</label><input id="pp" value="${p.price}" inputmode="numeric"></div></div>
+      <div class="actions"><span class="err" id="er"></span><button class="btn" onclick="location.hash='#/products'">取消</button><button class="btn pri" id="sv">儲存</button></div></div>`;
+    document.getElementById('sv').onclick = () => { const v = parseInt(document.getElementById('pp').value, 10); if (!(v > 0)) { document.getElementById('er').textContent = '單價要大於零'; return; } p.model = document.getElementById('pm').value.trim(); p.name = document.getElementById('pn').value.trim(); p.price = v; go('#/products'); };
+  },
+  quotes() {
+    const rows = DB.quotes.map(q => [q.no, esc(cust(q.customer).name), q.date, fmt(total(q)), `<span class="badge ${q.state === '已送出' ? 'sent' : ''}">${q.state}</span>`]);
+    app.innerHTML = `<h1>報價單列表</h1>` + listCard([{ t: '單號' }, { t: '客戶' }, { t: '日期' }, { t: '總額', a: 'r' }, { t: '狀態', a: 'c' }], rows, null, `<button class="btn pri" id="nw">＋ 開新單</button>`);
+    bindList(i => go(`#/quotes/${DB.quotes[i].no}`));
+    document.getElementById('nw').onclick = () => { draft = null; go('#/quotes/new'); };
+  },
+  quote(no) {
+    const isNew = no === 'new';
+    let q;
+    if (isNew) { if (!draft) draft = { no: nextNo(), customer: null, date: today(), sales: '林郁婷', state: '草稿', items: [] }; q = draft; }
+    else q = DB.quotes.find(x => x.no === no);
+    const locked = q.state === '已送出';
+    const t = total(q), ship = t >= 100000 ? '免運' : '運費另計';
+    app.innerHTML = `<h1>報價單詳細 <span class="badge ${locked ? 'sent' : ''}">${q.state}</span></h1><div class="card">
+      <div class="form">
+        <div class="f"><label>單號</label><div class="v num">${q.no}</div></div>
+        <div class="f"><label>日期</label><div class="v num">${q.date}</div></div>
+        <div class="f"><label>業務</label><div class="v">${q.sales}</div></div>
+        <div class="f" style="grid-column:span 2"><label>客戶</label>${locked || !isNew ? `<div class="v">${esc(cust(q.customer).name)}</div>` : `<div class="pick" id="pc">${q.customer ? esc(cust(q.customer).name) : '<span class="ph">尚未選擇</span>'}<b>選擇客戶 ›</b></div>`}</div>
+      </div>
+      <div class="sec"><b>品項</b>${isNew ? `<button class="btn sm" id="ai">＋ 新增品項</button>` : ''}</div>
+      <table><thead><tr><th>品名</th><th class="c">數量</th><th class="r">單價</th><th class="r">小計</th>${isNew ? '<th></th>' : ''}</tr></thead>
+      <tbody>${q.items.length ? q.items.map((it, k) => `<tr style="cursor:default"><td>${esc(prod(it.product).name)}</td>
+        <td class="c">${isNew ? `<span class="qty"><button data-dec="${k}">−</button><span class="num">${it.qty}</span><button data-inc="${k}">＋</button></span>` : `<span class="num">${it.qty}</span>`}</td>
+        <td class="r num">${fmt(it.price)}</td><td class="r num">${fmt(it.qty * it.price)}</td>${isNew ? `<td class="r"><button class="btn sm" data-rm="${k}">移除</button></td>` : ''}</tr>`).join('') : `<tr style="cursor:default"><td colspan="5" class="note" style="text-align:center;padding:28px">還沒有品項</td></tr>`}</tbody></table>
+      <div class="tot"><span class="note">${ship}</span><span>總計 <b class="num">NT$${fmt(t)}</b></span></div>
+      <div class="actions"><span class="err" id="er"></span>
+        ${isNew ? `<button class="btn" id="cx">取消</button><button class="btn pri" id="ok">確認建立</button>`
+                : `<button class="btn" onclick="location.hash='#/quotes'">返回列表</button><button class="btn" ${locked ? 'disabled title="已送出的報價單不能改"' : ''}>編輯</button><button class="btn pri" id="pdf">匯出 PDF</button>`}
+      </div></div>`;
+    if (isNew) {
+      const pc = document.getElementById('pc'); if (pc) pc.onclick = () => picker('選取客戶', [{ t: '客戶名稱' }, { t: '最近報價' }], DB.customers.map(c => [esc(c.name), quotesOf(c)[0] ? quotesOf(c)[0].no : '—']), i => { q.customer = DB.customers[i].id; render(); });
+      document.getElementById('ai').onclick = () => picker('選取商品', [{ t: '型號' }, { t: '品名' }, { t: '單價', a: 'r' }], DB.products.map(p => [esc(p.model), esc(p.name), fmt(p.price)]), i => { const p = DB.products[i]; const ex = q.items.find(x => x.product === p.id); if (ex) ex.qty++; else q.items.push({ product: p.id, qty: 1, price: p.price }); render(); });
+      app.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => { q.items[+b.dataset.inc].qty++; render(); });
+      app.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => { const it = q.items[+b.dataset.dec]; if (it.qty > 1) it.qty--; render(); });
+      app.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { q.items.splice(+b.dataset.rm, 1); render(); });
+      document.getElementById('cx').onclick = () => { draft = null; go('#/quotes'); };
+      document.getElementById('ok').onclick = () => {
+        const er = document.getElementById('er');
+        if (!q.customer) return er.textContent = '請先選擇客戶';
+        if (!q.items.length) return er.textContent = '至少要有一列品項';
+        DB.quotes.unshift(q); draft = null; go('#/quotes');
+      };
+    } else {
+      document.getElementById('pdf').onclick = () => { q.state = '已送出'; render(); toast(`已匯出 ${q.no}.pdf`); };
+    }
+  },
+  stats() {
+    const by = {};
+    DB.quotes.filter(q => q.state === '已送出').forEach(q => { const m = q.date.slice(0, 7); by[m] = by[m] || { n: 0, sum: 0 }; by[m].n++; by[m].sum += total(q); });
+    const ms = Object.keys(by).sort(), max = Math.max(...ms.map(m => by[m].sum), 1);
+    app.innerHTML = `<h1>業績</h1><div class="card"><div class="bars">${ms.map(m => `<div><small class="num">${fmt(by[m].sum)}</small><i style="height:${Math.round(by[m].sum / max * 160)}px"></i><small>${m}</small></div>`).join('')}</div>
+      <table style="margin-top:24px"><thead><tr><th>月份</th><th class="r">報價張數</th><th class="r">報價總額</th></tr></thead>
+      <tbody>${ms.map(m => `<tr style="cursor:default"><td class="num">${m}</td><td class="r num">${by[m].n}</td><td class="r num">${fmt(by[m].sum)}</td></tr>`).join('')}</tbody></table>
+      <div class="pager"><span>只算已送出的報價單</span><span>老闆只能看</span></div></div>`;
+  }
+};
+
+function picker(title, cols, rows, onPick) {
+  modal.innerHTML = `<div class="mask"><div class="dlg"><h2>${title}</h2>
+    <div class="bar"><div class="search" style="width:100%"><input placeholder="搜尋" id="ps"><span>⌕</span></div></div>
+    <table><thead><tr>${cols.map(c => `<th class="${c.a || ''}">${c.t}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map((r, i) => `<tr data-i="${i}" data-text="${plain(r)}">${r.map((v, k) => `<td class="${cols[k].a || ''} num">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>
+    <div class="actions"><button class="btn" id="pcx">取消</button></div></div></div>`;
+  const close = () => modal.innerHTML = '';
+  modal.querySelector('.mask').onclick = e => { if (e.target.classList.contains('mask')) close(); };
+  document.getElementById('pcx').onclick = close;
+  modal.querySelectorAll('tbody tr').forEach(tr => tr.onclick = () => { close(); onPick(+tr.dataset.i); });
+  const s = document.getElementById('ps'); s.focus();
+  s.oninput = () => modal.querySelectorAll('tbody tr').forEach(tr => tr.hidden = !tr.dataset.text.includes(s.value.trim()));
+}
+function toast(msg) {
+  const d = document.createElement('div');
+  d.textContent = msg;
+  d.style.cssText = 'position:fixed;right:20px;bottom:20px;background:var(--primary);color:var(--primary-foreground);padding:10px 16px;border-radius:6px;box-shadow:0 4px 12px rgb(0 0 0/.15);z-index:60';
+  document.body.appendChild(d); setTimeout(() => d.remove(), 2200);
+}
+function today() { return '2026-09-10'; }
+function nextNo() { const d = today().replace(/-/g, ''); return `Q-${d}-${String(DB.quotes.length + 2).padStart(3, '0')}`; }
+function go(h) { if (location.hash === h) render(); else location.hash = h; }
+function render() {
+  const p = (location.hash.replace(/^#\/?/, '') || 'quotes').split('/');
+  const base = p[0], id = p[1];
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.nav === base));
+  if (base === 'customers') id ? pages.customer(id) : pages.customers();
+  else if (base === 'products') id ? pages.product(id) : pages.products();
+  else if (base === 'stats') pages.stats();
+  else id ? pages.quote(decodeURIComponent(id)) : pages.quotes();
+  main.scrollTop = 0;
+}
+const main = document.querySelector('main');
+window.addEventListener('hashchange', render); render();
+})();
+</script>
+</body></html>

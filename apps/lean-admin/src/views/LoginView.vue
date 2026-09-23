@@ -36,7 +36,7 @@ async function submit() {
     <Card class="w-full max-w-sm">
       <CardHeader>
         <CardTitle>登入 lean-erp</CardTitle>
-        <CardDescription>本機開發預設帳號 dev / dev1234、amy / amy1234</CardDescription>
+        <CardDescription>本機開發預設帳號 dev / dev1234</CardDescription>
       </CardHeader>
       <CardContent>
         <form class="flex flex-col gap-4" @submit.prevent="submit">

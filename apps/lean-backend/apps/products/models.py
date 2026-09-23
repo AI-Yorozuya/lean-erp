@@ -1,13 +1,20 @@
-"""商品：品名＋預設單價。報價時挑它只是「帶入」——明細存快照，之後改這裡不回寫舊單（架構圖原則 8）。"""
+"""商品（系統總覽・資料 product）：型號、名稱、單價。價目表就是這張表：一個型號一個價，全客戶相同。
+
+- 型號唯一：同名的商品靠型號分（原則 rule_model_shown）。
+- 報價單的單價從這裡帶入，帶入後不再跟著改（原則 rule_price_frozen，存在報價單品項上）。
+"""
 from django.db import models
 
 from apps._common.models import TimeStampedModel
 
 
 class Product(TimeStampedModel):
-    name = models.CharField('品名', max_length=100)
-    default_price = models.PositiveIntegerField('預設單價')
-    note = models.TextField('備註', blank=True, default='')
+    model = models.CharField('型號', max_length=50, unique=True)
+    name = models.CharField('名稱', max_length=100)
+    price = models.PositiveIntegerField('單價')
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(price__gt=0), name='product_price_gt_0')]
 
     def __str__(self):
-        return self.name
+        return f'{self.model} {self.name}'

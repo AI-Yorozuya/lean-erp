@@ -12,7 +12,7 @@ import { ref, watch, nextTick, onBeforeMount, onMounted, onBeforeUnmount } from 
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 // 選單 icon 一律取「同一套 lucide、視覺重量相近的實心輪廓物件」——參 top-admin 的
 // constants/icons.js（避免混入 Activity 那種稀疏脈衝線，破壞整體一致性）。
-import { ChevronDown, ChevronsLeft, ChevronsRight, User, FileText, ClipboardList, LogOut } from '@lucide/vue'
+import { ChevronDown, ChevronsLeft, ChevronsRight, User, ShoppingCart, LogOut } from '@lucide/vue'
 import { getHealth } from '@/api'
 import { useSession } from '@/session'
 import HealthBadge from '@/components/HealthBadge.vue'
@@ -24,8 +24,16 @@ import bearBadge from '@/assets/bearhead_badge.png'
 // 標籤設計上限：中文 6 字（側欄寬度就是抓這個預算 + logo 一起定的）。
 // 三張表的頁面照 intents/ 逐塊長出來後掛在這。
 const nav = [
-  { to: '/quotations', label: '報價單', icon: FileText },
-  { to: '/orders', label: '訂單', icon: ClipboardList },
+  // 選單＝系統總覽的模組：一個模組一群（報表分析等業績頁做了再加）
+  {
+    label: '銷售管理',
+    icon: ShoppingCart,
+    children: [
+      { to: '/customers', label: '客戶' },
+      { to: '/products', label: '商品' },
+      { to: '/quotations', label: '報價單' },
+    ],
+  },
 ]
 
 const route = useRoute()
@@ -152,7 +160,7 @@ onBeforeUnmount(() => {
            整條側欄共用同一條「icon 軌」。寬度 w-44 是抓「6 字標籤 + 品牌字」的下限一起定的。 -->
       <RouterLink
         to="/quotations"
-        title="lean-erp · 報價成交"
+        title="lean-erp · 報價系統"
         class="flex h-14 shrink-0 cursor-pointer items-center gap-3 overflow-hidden border-b border-border text-left transition-opacity hover:opacity-70"
         :class="expanded ? 'justify-start px-5' : 'justify-center'"
       >
@@ -220,7 +228,7 @@ onBeforeUnmount(() => {
         </template>
       </nav>
 
-      <div v-show="expanded" class="overflow-hidden p-4 text-xs whitespace-nowrap text-muted-foreground">lean-erp · 報價成交</div>
+      <div v-show="expanded" class="overflow-hidden p-4 text-xs whitespace-nowrap text-muted-foreground">lean-erp · 報價系統</div>
     </aside>
 
     <!-- ── 右側：頂部 bar + 內容 ─────────────────────── -->

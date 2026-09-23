@@ -1,6 +1,6 @@
-"""單號：字母＋日期＋三碼流水（Q20260823-001、O20260823-001），同日連號不重複（原則 6）。
+"""單號：字母－日期－三碼流水（Q-20260901-003），同日連號不重複。
 
-報價單與訂單共用這一份：靠 DB unique 約束＋撞號重試——兩個人同秒開單，慢的那個撞
+靠 DB unique 約束＋撞號重試——兩個人同秒開單，慢的那個撞
 IntegrityError 再取號一次。只有「撞單號」值得重試，別的 IntegrityError 立刻往上丟。
 """
 import datetime as dt
@@ -11,11 +11,11 @@ MAX_RETRY = 3
 
 
 def next_no(model, letter: str, today: dt.date | None = None) -> str:
-    prefix = f'{letter}{(today or dt.date.today()):%Y%m%d}'
+    prefix = f'{letter}-{(today or dt.date.today()):%Y%m%d}-'
     last = (model.objects.filter(no__startswith=prefix)
             .order_by('-no').values_list('no', flat=True).first())
     seq = int(last.rsplit('-', 1)[1]) + 1 if last else 1
-    return f'{prefix}-{seq:03d}'
+    return f'{prefix}{seq:03d}'
 
 
 def is_no_collision(exc: IntegrityError, model) -> bool:

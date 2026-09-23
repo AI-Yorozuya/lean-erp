@@ -36,11 +36,16 @@ export const login = (username, password) => data(http.post('/auth/login', { use
 export const logout = () => data(http.post('/auth/logout'))
 export const me = () => data(http.get('/auth/me'))
 
-// ── 客戶、商品（挑選框用：{page,pageSize,search} → {items,count}）──
-const pageParams = ({ page = 1, pageSize = 8, search = '' } = {}) => ({ page, page_size: pageSize, search })
+// ── 客戶、商品（清單與挑選框共用：{page,pageSize,search} → {items,count}）──
+const pageParams = ({ page = 1, pageSize = 20, search = '' } = {}) => ({ page, page_size: pageSize, search })
 export const listCustomers = (opts) => data(http.get('/customers', { params: pageParams(opts) }))
+export const getCustomer = (id) => data(http.get(`/customers/${id}`))
 export const createCustomer = (payload) => data(http.post('/customers', payload))
+export const saveCustomer = (id, payload) => data(http.put(`/customers/${id}`, payload))
 export const listProducts = (opts) => data(http.get('/products', { params: pageParams(opts) }))
+export const getProduct = (id) => data(http.get(`/products/${id}`))
+export const createProduct = (payload) => data(http.post('/products', payload))
+export const saveProduct = (id, payload) => data(http.put(`/products/${id}`, payload))
 
 // ── 報價單 ──
 export const listQuotations = ({ status = '', search = '', page = 1, pageSize = 20 } = {}) =>
@@ -48,16 +53,8 @@ export const listQuotations = ({ status = '', search = '', page = 1, pageSize = 
 export const getQuotation = (id) => data(http.get(`/quotations/${id}`))
 export const createQuotation = (payload) => data(http.post('/quotations', payload))
 export const updateQuotation = (id, payload) => data(http.put(`/quotations/${id}`, payload))
-// action：send／recall／win／lose／reopen
-export const quotationAction = (id, action) => data(http.post(`/quotations/${id}/${action}`))
-export const quotationPdfUrl = (id) => `/api/v1/quotations/${id}/pdf`
-
-// ── 訂單 ──
-export const listOrders = ({ status = '', search = '', page = 1, pageSize = 20 } = {}) =>
-  data(http.get('/orders', { params: { status, search, page, page_size: pageSize } }))
-export const getOrder = (id) => data(http.get(`/orders/${id}`))
-export const convertToOrder = (quotationId) => data(http.post('/orders', { quotation_id: quotationId }))
-// action：start／finish／back／reopen／void
-export const orderAction = (id, action) => data(http.post(`/orders/${id}/${action}`))
+// 匯出 PDF：草稿轉已送出，回 PDF 檔；前端拿到檔案就下載
+export const exportQuotationPdf = (id) =>
+  http.post(`/quotations/${id}/pdf`, null, { responseType: 'blob' }).then((res) => res.data)
 
 export default http

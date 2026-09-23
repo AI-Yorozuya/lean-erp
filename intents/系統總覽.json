@@ -1,0 +1,599 @@
+{
+  "system": {
+    "name": "報價系統",
+    "purpose": "3C 店的業務替公司客戶開報價單，匯出 PDF 傳給客戶。"
+  },
+  "roles": [
+    {
+      "id": "salesperson",
+      "name": "業務"
+    },
+    {
+      "id": "boss",
+      "name": "老闆",
+      "mark": "src"
+    }
+  ],
+  "modules": [
+    {
+      "id": "sales",
+      "name": "銷售管理",
+      "roles": [
+        "salesperson"
+      ]
+    },
+    {
+      "id": "report",
+      "name": "報表分析",
+      "roles": [
+        "boss"
+      ],
+      "mark": "src"
+    }
+  ],
+  "data": [
+    {
+      "id": "customer",
+      "module": "sales",
+      "name": "客戶",
+      "fields": [
+        {
+          "text": "名稱",
+          "id": "name",
+          "type": "文字",
+          "required": true
+        },
+        {
+          "text": "聯絡人",
+          "id": "contact",
+          "type": "文字"
+        },
+        {
+          "text": "報價紀錄",
+          "id": "quote_count",
+          "type": "數字",
+          "calc": true
+        },
+        {
+          "text": "最近一張報價",
+          "id": "last_quote_id",
+          "type": "引用",
+          "ref": "quote",
+          "calc": true
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "module": "sales",
+      "name": "商品",
+      "fields": [
+        {
+          "text": "型號",
+          "id": "model",
+          "type": "文字",
+          "required": true,
+          "unique": true
+        },
+        {
+          "text": "名稱",
+          "id": "name",
+          "type": "文字",
+          "required": true
+        },
+        {
+          "text": "單價",
+          "id": "price",
+          "type": "金額",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "quote",
+      "module": "sales",
+      "name": "報價單",
+      "fields": [
+        {
+          "text": "單號",
+          "id": "quote_no",
+          "type": "文字",
+          "required": true,
+          "unique": true
+        },
+        {
+          "text": "客戶",
+          "id": "customer_id",
+          "type": "引用",
+          "required": true,
+          "ref": "customer"
+        },
+        {
+          "text": "日期",
+          "id": "date",
+          "type": "日期",
+          "required": true
+        },
+        {
+          "text": "業務",
+          "id": "sales_name",
+          "type": "文字",
+          "required": true
+        },
+        {
+          "text": "狀態",
+          "id": "status",
+          "type": "選項",
+          "required": true,
+          "mark": "ai",
+          "tag": "AI 推的，待確認",
+          "options": [
+            {
+              "text": "草稿",
+              "id": "draft"
+            },
+            {
+              "text": "已送出",
+              "id": "sent"
+            }
+          ],
+          "state": true
+        },
+        {
+          "text": "送出日期",
+          "id": "sent_at",
+          "type": "日期"
+        },
+        {
+          "text": "總額",
+          "id": "total",
+          "type": "金額",
+          "required": true,
+          "calc": true
+        }
+      ],
+      "refs": [
+        {
+          "to": "customer",
+          "text": "一張報價單一個客戶；一個客戶多張報價單"
+        }
+      ]
+    },
+    {
+      "id": "quote_item",
+      "module": "sales",
+      "name": "報價單品項",
+      "fields": [
+        {
+          "text": "報價單",
+          "id": "quote_id",
+          "type": "引用",
+          "required": true,
+          "ref": "quote"
+        },
+        {
+          "text": "商品",
+          "id": "product_id",
+          "type": "引用",
+          "required": true,
+          "ref": "product"
+        },
+        {
+          "text": "數量",
+          "id": "qty",
+          "type": "數字",
+          "required": true
+        },
+        {
+          "text": "單價",
+          "id": "unit_price",
+          "type": "金額",
+          "required": true,
+          "mark": "dec",
+          "tag": "拍板：建立時從商品帶入，之後不變；客戶手上的單不能變（2026-09-17）"
+        },
+        {
+          "text": "小計",
+          "id": "subtotal",
+          "type": "金額",
+          "required": true,
+          "calc": true
+        }
+      ],
+      "refs": [
+        {
+          "to": "quote",
+          "text": "一張報價單，多列品項；至少一列，數量大於零",
+          "part": true
+        },
+        {
+          "to": "product",
+          "text": "每列品項一個商品；一個商品出現在多張報價單"
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "module": "report",
+      "name": "業績",
+      "fields": [
+        {
+          "text": "月份",
+          "id": "month",
+          "type": "日期",
+          "required": true
+        },
+        {
+          "text": "報價張數",
+          "id": "quote_count",
+          "type": "數字",
+          "required": true,
+          "calc": true
+        },
+        {
+          "text": "報價總額",
+          "id": "quote_total",
+          "type": "金額",
+          "required": true,
+          "calc": true
+        }
+      ],
+      "refs": [
+        {
+          "to": "quote",
+          "text": "每月業績從當月已送出的報價單算出來"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "data": "quote",
+      "lanes": [
+        "salesperson"
+      ],
+      "steps": [
+        {
+          "id": "pick_customer",
+          "lane": "salesperson",
+          "label": "選擇客戶",
+          "page": "quote_detail",
+          "opens": "customer_picker"
+        },
+        {
+          "id": "add_item",
+          "lane": "salesperson",
+          "label": "新增品項",
+          "page": "quote_detail",
+          "opens": "product_picker"
+        },
+        {
+          "id": "create",
+          "lane": "salesperson",
+          "label": "確認建立",
+          "page": "quote_detail",
+          "to": "draft",
+          "spec": "sp_create"
+        },
+        {
+          "id": "pdf",
+          "lane": "salesperson",
+          "label": "匯出 PDF",
+          "page": "quote_detail",
+          "from": "draft",
+          "to": "sent",
+          "lock": "不能改",
+          "spec": "sp_pdf"
+        },
+        {
+          "id": "send",
+          "lane": "salesperson",
+          "label": "傳給客戶",
+          "dashed": true
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "customer_list",
+      "data": "customer",
+      "kind": "list",
+      "name": "客戶列表"
+    },
+    {
+      "id": "customer_detail",
+      "data": "customer",
+      "kind": "detail",
+      "name": "客戶詳細",
+      "actions": [
+        {
+          "label": "儲存"
+        }
+      ]
+    },
+    {
+      "id": "customer_picker",
+      "data": "customer",
+      "kind": "widget",
+      "name": "選取客戶",
+      "used_by": [
+        "quote_detail"
+      ]
+    },
+    {
+      "id": "product_list",
+      "data": "product",
+      "kind": "list",
+      "name": "商品列表"
+    },
+    {
+      "id": "product_detail",
+      "data": "product",
+      "kind": "detail",
+      "name": "商品詳細",
+      "actions": [
+        {
+          "label": "儲存",
+          "spec": "sp_product_save"
+        }
+      ]
+    },
+    {
+      "id": "product_picker",
+      "data": "product",
+      "kind": "widget",
+      "name": "選取商品",
+      "used_by": [
+        "quote_detail"
+      ]
+    },
+    {
+      "id": "quote_list",
+      "data": "quote",
+      "kind": "list",
+      "name": "報價單列表"
+    },
+    {
+      "id": "quote_detail",
+      "data": "quote",
+      "kind": "detail",
+      "name": "報價單詳細",
+      "actions": [
+        {
+          "label": "編輯"
+        }
+      ]
+    },
+    {
+      "id": "stats_report",
+      "data": "stats",
+      "kind": "report",
+      "name": "業績頁"
+    }
+  ],
+  "principles": [
+    {
+      "id": "rule_customer_pick",
+      "module": "sales",
+      "text": "客戶資料只能選取引用，報價單上不打字輸入客戶",
+      "mark": "src"
+    },
+    {
+      "id": "rule_price_from_product",
+      "module": "sales",
+      "text": "單價一律取自商品資料，報價單上不能手改單價",
+      "mark": "src"
+    },
+    {
+      "id": "rule_model_shown",
+      "module": "sales",
+      "text": "同名商品靠型號分，列表一定顯示型號",
+      "mark": "src"
+    },
+    {
+      "id": "rule_total_sum",
+      "module": "sales",
+      "text": "總額必須等於品項加總",
+      "mark": "src"
+    },
+    {
+      "id": "rule_free_shipping",
+      "module": "sales",
+      "text": "滿十萬免運",
+      "mark": "src"
+    },
+    {
+      "id": "rule_sent_locked",
+      "module": "sales",
+      "text": "已送出的報價單不能改",
+      "mark": "ai",
+      "tag": "AI 推的，待確認"
+    },
+    {
+      "id": "rule_customer_has_quote",
+      "module": "sales",
+      "text": "有報價單的客戶不能刪",
+      "mark": "ai",
+      "tag": "AI 推的，待確認"
+    },
+    {
+      "id": "rule_price_frozen",
+      "module": "sales",
+      "text": "已送出的報價單，單價不變；商品改價不影響舊單",
+      "mark": "dec",
+      "tag": "拍板：客戶手上的單不能變（2026-09-17）"
+    },
+    {
+      "id": "rule_boss_view_only",
+      "module": "report",
+      "text": "老闆只能看業績，不能改報價單",
+      "mark": "src"
+    }
+  ],
+  "specs": [
+    {
+      "id": "sp_create",
+      "title": "報價單詳細頁「確認建立」",
+      "action": "業務在報價單詳細頁按「確認建立」，建立一張報價單，狀態草稿。",
+      "fields": [
+        {
+          "ref": "quote.customer_id",
+          "note": "選取自客戶資料"
+        },
+        {
+          "ref": "quote_item.product_id",
+          "note": "選取自商品資料，至少一列"
+        },
+        {
+          "ref": "quote_item.qty",
+          "note": "可增減，最小 1"
+        },
+        {
+          "ref": "quote_item.unit_price",
+          "note": "建立時從商品帶入，不能改"
+        },
+        {
+          "ref": "quote.date",
+          "note": "系統帶入今天"
+        },
+        {
+          "ref": "quote.sales_name",
+          "note": "系統帶入登入者"
+        },
+        {
+          "ref": "quote.status",
+          "note": "設為草稿"
+        }
+      ],
+      "calc": "小計＝單價 × 數量：27 吋螢幕 10,000 × 20 ＝ 200,000。總額＝各列小計加總：200,000 ＋ 21,000 ＝ 221,000。滿 100,000 免運，運費 0。",
+      "response": "成功：進報價單列表，第一列是這張新單。失敗：沒選客戶、沒有品項、數量小於 1 都不能建立，畫面提示、資料留在頁上。取消：丟掉，回列表。",
+      "calc_rules": [
+        "rule_total_sum",
+        "rule_free_shipping",
+        "rule_price_from_product"
+      ]
+    },
+    {
+      "id": "sp_pdf",
+      "title": "報價單詳細頁「匯出 PDF」",
+      "action": "業務在報價單詳細頁按「匯出 PDF」，得到 PDF，狀態草稿 → 已送出。",
+      "fields": [
+        {
+          "ref": "quote.status",
+          "note": "改為已送出"
+        },
+        {
+          "ref": "quote.sent_at",
+          "note": "記今天"
+        }
+      ],
+      "calc": "無；PDF 上的數字照報價單。",
+      "response": "成功：下載 PDF，狀態顯示已送出，「編輯」不能按。失敗：沒有品項不能匯出。"
+    },
+    {
+      "id": "sp_product_save",
+      "title": "商品詳細頁「儲存」",
+      "action": "業務在商品詳細頁按「儲存」，更新這個商品的型號、名稱、單價。",
+      "fields": [
+        {
+          "ref": "product.model",
+          "note": "不能跟別的商品重複"
+        },
+        {
+          "ref": "product.name"
+        },
+        {
+          "ref": "product.price",
+          "note": "大於 0"
+        }
+      ],
+      "calc": "無。",
+      "response": "成功：留在商品詳細頁，看到新值。失敗：型號、名稱空白或單價不大於 0 都不能儲存，畫面提示、資料不變。取消：回商品列表，不存。"
+    }
+  ],
+  "tests": [
+    {
+      "id": "test_create_ok",
+      "spec": "sp_create",
+      "kind": "ok",
+      "text": "選客戶，加 27 吋螢幕 20 台、32 吋螢幕 1 台，按確認建立，列表看到總額 221,000。",
+      "guards": [
+        "rule_total_sum"
+      ]
+    },
+    {
+      "id": "test_create_no",
+      "spec": "sp_create",
+      "kind": "no",
+      "text": "想手改單價做不到，總額仍是 221,000。",
+      "guards": [
+        "rule_price_from_product",
+        "rule_total_sum"
+      ]
+    },
+    {
+      "id": "test_pdf_ok",
+      "spec": "sp_pdf",
+      "kind": "ok",
+      "text": "匯出後重開這張單，狀態已送出、PDF 總額 221,000。",
+      "guards": []
+    },
+    {
+      "id": "test_pdf_no",
+      "spec": "sp_pdf",
+      "kind": "no",
+      "text": "已送出的單按編輯改不了；商品改價後重開這張單，單價仍是 10,000。",
+      "guards": [
+        "rule_sent_locked",
+        "rule_price_frozen"
+      ]
+    },
+    {
+      "id": "test_product_save_ok",
+      "spec": "sp_product_save",
+      "kind": "ok",
+      "text": "把 27 吋螢幕單價改成 12,000 存檔，重開看到 12,000；開一張新報價單加這個商品，單價帶入 12,000。",
+      "guards": [
+        "rule_price_from_product"
+      ]
+    },
+    {
+      "id": "test_product_save_no",
+      "spec": "sp_product_save",
+      "kind": "no",
+      "text": "改價後重開 Q-20260901-003，那一列單價仍是 10,000，總額不變。",
+      "guards": [
+        "rule_price_frozen"
+      ]
+    }
+  ],
+  "releases": [
+    {
+      "v": "v2",
+      "date": "2026-09-17",
+      "what": "改價不影響舊單（品項存下建立時的單價）；老闆要看業績，多報表分析模組、業績頁；商品儲存寫規格",
+      "who": "單價不變：老闆拍板，客戶手上的單不能變｜業績頁：老闆提的需求",
+      "changes": [
+        "quote_item.unit_price",
+        "quote.sent_at",
+        "rule_price_frozen",
+        "sp_product_save",
+        "test_product_save_ok",
+        "test_product_save_no",
+        "boss",
+        "report",
+        "stats",
+        "stats_report",
+        "rule_boss_view_only"
+      ]
+    },
+    {
+      "v": "v1",
+      "date": "2026-09-17",
+      "what": "依意圖清單、資料清單、頁面清單起草；報價單狀態是 AI 推的",
+      "who": "AI 起草",
+      "changes": []
+    }
+  ]
+}
