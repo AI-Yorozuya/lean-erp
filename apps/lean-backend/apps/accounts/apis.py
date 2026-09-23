@@ -20,6 +20,7 @@ class LoginIn(Schema):
 class MeOut(Schema):
     username: str
     display_name: str
+    role: str
 
 
 @router.get('/csrf', auth=None)
@@ -48,4 +49,5 @@ def logout_view(request):
 
 @router.get('/me', response=MeOut)
 def me(request):
-    return {'username': request.user.username, 'display_name': request.user.shown_name}
+    u = request.user
+    return {'username': u.username, 'display_name': u.shown_name, 'role': u.role}

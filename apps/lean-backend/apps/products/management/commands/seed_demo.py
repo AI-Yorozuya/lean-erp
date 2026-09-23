@@ -34,7 +34,7 @@ QUOTES = [
 
 
 class Command(BaseCommand):
-    help = '課程 3C 報價案例：業務帳號＋客戶＋商品＋三張已送出的報價單（可重跑，不重複建）'
+    help = '課程 3C 報價案例：業務與老闆帳號＋客戶＋商品＋三張已送出的報價單（可重跑，不重複建）'
 
     def handle(self, *args, **options):
         U = get_user_model()
@@ -43,6 +43,11 @@ class Command(BaseCommand):
             sales.set_password('dev1234')
             sales.save()
             self.stdout.write('建了業務帳號 dev / dev1234（林郁婷）')
+        boss, created = U.objects.get_or_create(username='boss', defaults={'display_name': '老闆', 'role': U.Role.BOSS})
+        if created:
+            boss.set_password('boss1234')
+            boss.save()
+            self.stdout.write('建了老闆帳號 boss / boss1234（看業績）')
 
         C = {name: Customer.objects.get_or_create(name=name, defaults={'contact': contact})[0]
              for name, contact in CUSTOMERS}

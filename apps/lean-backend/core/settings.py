@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'apps.customers',
     'apps.products',
     'apps.quotations',
+    'apps.reports',    # 報表分析：業績
 ]
 
 # 自訂 User（帳號／密碼雜湊／顯示名稱）——起手就換，事後換是 Django 最痛的手術。

@@ -14,6 +14,7 @@ from apps.customers.apis import router as customers_router
 from apps.health.apis import router as health_router
 from apps.products.apis import router as products_router
 from apps.quotations.apis import router as quotations_router
+from apps.reports.apis import router as reports_router
 
 # title / version 會顯示在自動產生的 API 文件（/api/v1/docs）。
 api = NinjaAPI(title='lean-erp API', version='1.0.0')
@@ -27,3 +28,4 @@ api.add_router('/auth', auth_router)
 api.add_router('/customers', customers_router)
 api.add_router('/products', products_router)
 api.add_router('/quotations', quotations_router)
+api.add_router('/reports', reports_router)

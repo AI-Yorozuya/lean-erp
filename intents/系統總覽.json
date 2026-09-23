@@ -369,7 +369,13 @@
       "id": "stats_report",
       "data": "stats",
       "kind": "report",
-      "name": "業績頁"
+      "name": "業績頁",
+      "actions": [
+        {
+          "label": "查詢",
+          "spec": "sp_stats"
+        }
+      ]
     }
   ],
   "principles": [
@@ -510,6 +516,30 @@
       ],
       "calc": "無。",
       "response": "成功：留在商品詳細頁，看到新值。失敗：型號、名稱空白或單價不大於 0 都不能儲存，畫面提示、資料不變。取消：回商品列表，不存。"
+    },
+    {
+      "id": "sp_stats",
+      "title": "業績頁「查詢」",
+      "action": "老闆打開業績頁，看到每個月的報價張數和報價總額。",
+      "fields": [
+        {
+          "ref": "stats.month",
+          "note": "已送出報價單的送出日期所在的月份"
+        },
+        {
+          "ref": "stats.quote_count",
+          "note": "系統算出"
+        },
+        {
+          "ref": "stats.quote_total",
+          "note": "系統算出"
+        }
+      ],
+      "calc": "報價張數＝送出日期落在這個月的報價單張數；報價總額＝這些報價單的總額加總。2026 年 9 月：Q-20260901-003 257,800 ＋ Q-20260903-004 100,000 ＝ 2 張、357,800。草稿還沒送出，不算。",
+      "response": "成功：一個月一列，新的月份在上面；沒有送出報價單的月份不列。業務打開業績頁，看到沒有權限。",
+      "calc_rules": [
+        "rule_total_sum"
+      ]
     }
   ],
   "tests": [
@@ -566,9 +596,36 @@
       "guards": [
         "rule_price_frozen"
       ]
+    },
+    {
+      "id": "test_stats_ok",
+      "spec": "sp_stats",
+      "kind": "ok",
+      "text": "老闆打開業績頁，2026 年 9 月那一列：報價張數 2、報價總額 357,800。",
+      "guards": []
+    },
+    {
+      "id": "test_stats_no",
+      "spec": "sp_stats",
+      "kind": "no",
+      "text": "業務開一張草稿不匯出，9 月仍是 2 張、357,800；老闆想改報價單做不到。",
+      "guards": [
+        "rule_boss_view_only"
+      ]
     }
   ],
   "releases": [
+    {
+      "v": "v3",
+      "date": "2026-09-23",
+      "what": "業績頁寫規格：每月報價張數、報價總額，從已送出的報價單算",
+      "who": "業績頁：老闆提的需求（v2 落圖）｜規格：AI 起草",
+      "changes": [
+        "sp_stats",
+        "test_stats_ok",
+        "test_stats_no"
+      ]
+    },
     {
       "v": "v2",
       "date": "2026-09-17",

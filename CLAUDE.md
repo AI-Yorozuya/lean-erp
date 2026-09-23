@@ -14,7 +14,7 @@
 - **零真實資料**。這是公開 repo，資料一律 seed 假資料；`.env` 永不進版控。
 - **總額不存欄位**、不接受輸入——由品項現算（rule_total_sum）。
 - **單價不收前端的數字**——建立時從商品帶入、之後不變（rule_price_from_product、rule_price_frozen）。
-- **門預設是關的**：新的 ninja `Router` 一律在 router 層掛 `auth=django_auth`；公開端點各自用 `auth=None` 明講。
+- **門預設是關的，而且照模組分角色**：銷售管理的 router 掛 `auth=sales_only`、報表分析掛 `boss_only`（`apps/_common/roles.py`＝系統總覽 modules[].roles）；公開端點各自用 `auth=None` 明講。
 - 系統總覽上每條原則、每條驗收，都要有一個測試守著；**測試函式名＝系統總覽的 id**（`test_create_ok`、`test_rule_sent_locked`）。
 
 ## 慣例
@@ -29,7 +29,7 @@
 
 ```
 intents/           知識層：意圖清單、頁面清單、原型、系統總覽（先有這個，程式才長）
-apps/lean-backend  Django-Ninja；core/ 設定與 API 註冊，apps/ 各功能（customers、products、quotations、accounts）
+apps/lean-backend  Django-Ninja；core/ 設定與 API 註冊，apps/ 各功能（customers、products、quotations＝銷售管理；reports＝報表分析；accounts＝登入與角色）
 apps/lean-admin    Vue3 + shadcn-vue 後台
 infra/             部署
 ```

@@ -147,7 +147,7 @@ tr.hit td{background:#fff7ed}
     <a href="#/rule" data-nav="rule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg>原則</a>
     <a href="#/releases" data-nav="releases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>版本</a>
   </nav>
-  <div class="foot">v2 · 2026-09-17</div>
+  <div class="foot">v3 · 2026-09-23</div>
 </aside>
 <div class="right">
   <main>
@@ -201,7 +201,7 @@ tr.hit td{background:#fff7ed}
 <tr data-m="sales" class=""><td><a class="act" data-spec-open="sp_create" title="看規格">確認建立</a></td><td><span class="none">—</span></td><td class="code"></td></tr>
 <tr data-m="sales" class=""><td><a class="act" data-spec-open="sp_pdf" title="看規格">匯出 PDF</a></td><td><span class="none">—</span></td><td class="code"></td></tr>
 <tr data-m="sales" class="last"><td>編輯</td><td><span class="none">—</span></td><td class="code"></td></tr>
-<tr id="page-stats_report" data-m="report" class="last"><td rowspan="1" class="grp">報表分析</td><td rowspan="1" class="key src">業績頁</td><td rowspan="1">業績</td><td><span class="none">—</span></td><td><span class="none">—</span></td><td rowspan="1" class="code">stats_report</td><td class="code"></td></tr>
+<tr id="page-stats_report" data-m="report" class="last"><td rowspan="1" class="grp">報表分析</td><td rowspan="1" class="key src">業績頁</td><td rowspan="1">業績</td><td><a class="act" data-spec-open="sp_stats" title="看規格">查詢</a></td><td><span class="none">—</span></td><td rowspan="1" class="code">stats_report</td><td class="code"></td></tr>
 <tr class="emptyrow" hidden><td colspan="99">沒有資料</td></tr>
 </table></div>
 </section>
@@ -235,6 +235,12 @@ tr.hit td{background:#fff7ed}
 <tr data-m="sales"><td class="nowrap">權限</td><td>業務<span class="fm">來自權限頁</span></td></tr>
 <tr data-m="sales"><td class="nowrap">回應</td><td>成功：留在商品詳細頁，看到新值。失敗：型號、名稱空白或單價不大於 0 都不能儲存，畫面提示、資料不變。取消：回商品列表，不存。</td></tr>
 <tr data-m="sales"><td class="nowrap">驗收</td><td><div class="tt"><span class="ok">正常</span>：把 27 吋螢幕單價改成 12,000 存檔，重開看到 12,000；開一張新報價單加這個商品，單價帶入 12,000。<div class="gd">守護：<span class="src">單價一律取自商品資料，報價單上不能手改單價</span></div></div><div class="tt"><span class="no">不能出錯</span>：改價後重開 Q-20260901-003，那一列單價仍是 10,000，總額不變。<div class="gd">守護：<span class="dec">已送出的報價單，單價不變；商品改價不影響舊單</span></div></div></td></tr>
+<tr id="spec-sp_stats" data-m="report"><td rowspan="6" class="grp"><div class="stk">報表分析</div></td><td rowspan="6" class="key"><div class="stk">查詢</div></td><td rowspan="6" class="nowrap"><div class="stk">業績頁</div></td><td class="nowrap">動作</td><td>老闆打開業績頁，看到每個月的報價張數和報價總額。</td><td rowspan="6" class="code"><div class="stk">sp_stats</div></td></tr>
+<tr data-m="report"><td class="nowrap">欄位</td><td><div class="fr"><a class="lnk" href="#/data/f-stats.month">業績・月份</a><span class="fm">日期、必填</span>：已送出報價單的送出日期所在的月份</div><div class="fr"><a class="lnk" href="#/data/f-stats.quote_count">業績・報價張數</a><span class="fm">數字、必填</span>：系統算出</div><div class="fr"><a class="lnk" href="#/data/f-stats.quote_total">業績・報價總額</a><span class="fm">金額、必填</span>：系統算出</div></td></tr>
+<tr data-m="report"><td class="nowrap">計算</td><td>報價張數＝送出日期落在這個月的報價單張數；報價總額＝這些報價單的總額加總。2026 年 9 月：Q-20260901-003 257,800 ＋ Q-20260903-004 100,000 ＝ 2 張、357,800。草稿還沒送出，不算。<div class="gd">依據：<a class="lnk src" href="#/rule/rule-rule_total_sum">總額必須等於品項加總</a></div></td></tr>
+<tr data-m="report"><td class="nowrap">權限</td><td>老闆<span class="fm">來自權限頁</span></td></tr>
+<tr data-m="report"><td class="nowrap">回應</td><td>成功：一個月一列，新的月份在上面；沒有送出報價單的月份不列。業務打開業績頁，看到沒有權限。</td></tr>
+<tr data-m="report"><td class="nowrap">驗收</td><td><div class="tt"><span class="ok">正常</span>：老闆打開業績頁，2026 年 9 月那一列：報價張數 2、報價總額 357,800。</div><div class="tt"><span class="no">不能出錯</span>：業務開一張草稿不匯出，9 月仍是 2 張、357,800；老闆想改報價單做不到。<div class="gd">守護：<span class="src">老闆只能看業績，不能改報價單</span></div></div></td></tr>
 <tr class="emptyrow" hidden><td colspan="99">沒有資料</td></tr>
 </table></div>
 </section>
@@ -254,7 +260,8 @@ tr.hit td{background:#fff7ed}
 <tr data-m="sales"><td>確認建立</td><td class="c">✓</td><td class="c"></td></tr>
 <tr data-m="sales"><td>匯出 PDF</td><td class="c">✓</td><td class="c"></td></tr>
 <tr data-m="sales"><td>編輯</td><td class="c">✓</td><td class="c"></td></tr>
-<tr data-m="report"><td rowspan="1" class="grp">報表分析</td><td rowspan="1" class="key">業績頁</td><td>查看</td><td class="c"></td><td class="c">✓</td><td rowspan="1" class="code">stats_report</td></tr>
+<tr data-m="report"><td rowspan="2" class="grp"><div class="stk">報表分析</div></td><td rowspan="2" class="key"><div class="stk">業績頁</div></td><td>查看</td><td class="c"></td><td class="c">✓</td><td rowspan="2" class="code"><div class="stk">stats_report</div></td></tr>
+<tr data-m="report"><td>查詢</td><td class="c"></td><td class="c">✓</td></tr>
 <tr class="emptyrow" hidden><td colspan="99">沒有資料</td></tr>
 </table></div>
 </section>
@@ -275,6 +282,7 @@ tr.hit td{background:#fff7ed}
 </section>
 <section class="view" data-view="releases" data-title="版本" data-sub="" hidden>
 <div class="card tbl"><table><tr><th>版本</th><th>日期</th><th>改了什麼</th><th>動到哪些</th><th>誰決定的</th></tr>
+<tr><td class="key">v3</td><td class="nowrap">2026-09-23</td><td>業績頁寫規格：每月報價張數、報價總額，從已送出的報價單算</td><td class="chgs"><a class="act" data-spec-open="sp_stats">規格：查詢</a><a class="act" data-spec-open="sp_stats">驗收：查詢（正常）</a><a class="act" data-spec-open="sp_stats">驗收：查詢（不能出錯）</a></td><td>業績頁：老闆提的需求（v2 落圖）｜規格：AI 起草</td></tr>
 <tr><td class="key">v2</td><td class="nowrap">2026-09-17</td><td>改價不影響舊單（品項存下建立時的單價）；老闆要看業績，多報表分析模組、業績頁；商品儲存寫規格</td><td class="chgs"><a class="act" href="#/data/f-quote_item.unit_price">報價單品項・單價</a><a class="act" href="#/data/f-quote.sent_at">報價單・送出日期</a><a class="act" href="#/rule/rule-rule_price_frozen">已送出的報價單，單價不變；商品改價不影響舊單</a><a class="act" data-spec-open="sp_product_save">規格：儲存</a><a class="act" data-spec-open="sp_product_save">驗收：儲存（正常）</a><a class="act" data-spec-open="sp_product_save">驗收：儲存（不能出錯）</a><a class="act" href="#/perm">角色：老闆</a><a class="act" href="#/data">模組：報表分析</a><a class="act" href="#/data/d-row-stats">業績</a><a class="act" href="#/page/page-stats_report">業績頁</a><a class="act" href="#/rule/rule-rule_boss_view_only">老闆只能看業績，不能改報價單</a></td><td>單價不變：老闆拍板，客戶手上的單不能變｜業績頁：老闆提的需求</td></tr>
 <tr><td class="key">v1</td><td class="nowrap">2026-09-17</td><td>依意圖清單、資料清單、頁面清單起草；報價單狀態是 AI 推的</td><td class="chgs"><span class="none">—</span></td><td>AI 起草</td></tr>
 </table></div>
@@ -299,6 +307,12 @@ tr.hit td{background:#fff7ed}
 <div class="db"><dl><dt>動作</dt><dd>業務在商品詳細頁按「儲存」，更新這個商品的型號、名稱、單價。</dd><dt>欄位</dt><dd><div class="fr"><a class="lnk" href="#/data/f-product.model">商品・型號</a><span class="fm">文字、必填、不能重複</span>：不能跟別的商品重複</div><div class="fr"><a class="lnk" href="#/data/f-product.name">商品・名稱</a><span class="fm">文字、必填</span></div><div class="fr"><a class="lnk" href="#/data/f-product.price">商品・單價</a><span class="fm">金額、必填</span>：大於 0</div></dd><dt>計算</dt><dd>無。</dd><dt>權限</dt><dd>業務<span class="fm">來自權限頁</span></dd><dt>回應</dt><dd>成功：留在商品詳細頁，看到新值。失敗：型號、名稱空白或單價不大於 0 都不能儲存，畫面提示、資料不變。取消：回商品列表，不存。</dd>
 <dt>驗收</dt><dd><div class="tt"><span class="ok">正常</span>：把 27 吋螢幕單價改成 12,000 存檔，重開看到 12,000；開一張新報價單加這個商品，單價帶入 12,000。<div class="gd">守護：<span class="src">單價一律取自商品資料，報價單上不能手改單價</span></div></div><div class="tt"><span class="no">不能出錯</span>：改價後重開 Q-20260901-003，那一列單價仍是 10,000，總額不變。<div class="gd">守護：<span class="dec">已送出的報價單，單價不變；商品改價不影響舊單</span></div></div></dd></dl></div>
 <div class="df"><code>sp_product_save</code><a class="lnk" href="#/spec/spec-sp_product_save" data-close>到規格頁</a></div>
+</div>
+<div class="spd" data-spec="sp_stats" hidden>
+<div class="dh"><div><h3>查詢</h3><p class="note">業績頁</p></div><button type="button" class="x" data-close title="關閉">✕</button></div>
+<div class="db"><dl><dt>動作</dt><dd>老闆打開業績頁，看到每個月的報價張數和報價總額。</dd><dt>欄位</dt><dd><div class="fr"><a class="lnk" href="#/data/f-stats.month">業績・月份</a><span class="fm">日期、必填</span>：已送出報價單的送出日期所在的月份</div><div class="fr"><a class="lnk" href="#/data/f-stats.quote_count">業績・報價張數</a><span class="fm">數字、必填</span>：系統算出</div><div class="fr"><a class="lnk" href="#/data/f-stats.quote_total">業績・報價總額</a><span class="fm">金額、必填</span>：系統算出</div></dd><dt>計算</dt><dd>報價張數＝送出日期落在這個月的報價單張數；報價總額＝這些報價單的總額加總。2026 年 9 月：Q-20260901-003 257,800 ＋ Q-20260903-004 100,000 ＝ 2 張、357,800。草稿還沒送出，不算。<div class="gd">依據：<a class="lnk src" href="#/rule/rule-rule_total_sum">總額必須等於品項加總</a></div></dd><dt>權限</dt><dd>老闆<span class="fm">來自權限頁</span></dd><dt>回應</dt><dd>成功：一個月一列，新的月份在上面；沒有送出報價單的月份不列。業務打開業績頁，看到沒有權限。</dd>
+<dt>驗收</dt><dd><div class="tt"><span class="ok">正常</span>：老闆打開業績頁，2026 年 9 月那一列：報價張數 2、報價總額 357,800。</div><div class="tt"><span class="no">不能出錯</span>：業務開一張草稿不匯出，9 月仍是 2 張、357,800；老闆想改報價單做不到。<div class="gd">守護：<span class="src">老闆只能看業績，不能改報價單</span></div></div></dd></dl></div>
+<div class="df"><code>sp_stats</code><a class="lnk" href="#/spec/spec-sp_stats" data-close>到規格頁</a></div>
 </div>
 </div></div>
 </div>

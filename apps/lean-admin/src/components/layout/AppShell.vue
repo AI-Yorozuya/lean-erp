@@ -8,11 +8,11 @@
 //   - nav 支援兩種：單一項（有 to）與群組（有 children）。加頁往這個陣列加一筆。
 //   - active 用 derive（讀 route，不用 watch）；含 active 子項的群組自動展開。
 //   - 可收合（w-56 完整 ⇄ w-16 icon-only），狀態存 localStorage、小螢幕自動收。
-import { ref, watch, nextTick, onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, watch, nextTick, onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 // 選單 icon 一律取「同一套 lucide、視覺重量相近的實心輪廓物件」——參 top-admin 的
 // constants/icons.js（避免混入 Activity 那種稀疏脈衝線，破壞整體一致性）。
-import { ChevronDown, ChevronsLeft, ChevronsRight, User, ShoppingCart, LogOut } from '@lucide/vue'
+import { ChevronDown, ChevronsLeft, ChevronsRight, User, ShoppingCart, ChartColumn, LogOut } from '@lucide/vue'
 import { getHealth } from '@/api'
 import { useSession } from '@/session'
 import HealthBadge from '@/components/HealthBadge.vue'
@@ -23,18 +23,27 @@ import bearBadge from '@/assets/bearhead_badge.png'
 // 導覽：單一項 { to, label, icon }；群組 { label, icon, children:[{ to, label }] }。
 // 標籤設計上限：中文 6 字（側欄寬度就是抓這個預算 + logo 一起定的）。
 // 三張表的頁面照 intents/ 逐塊長出來後掛在這。
-const nav = [
-  // 選單＝系統總覽的模組：一個模組一群（報表分析等業績頁做了再加）
+const session = useSession()
+const allNav = [
+  // 選單＝系統總覽的模組：一個模組一群，roles＝誰用這個模組
   {
     label: '銷售管理',
     icon: ShoppingCart,
+    roles: ['salesperson'],
     children: [
       { to: '/customers', label: '客戶' },
       { to: '/products', label: '商品' },
       { to: '/quotations', label: '報價單' },
     ],
   },
+  {
+    label: '報表分析',
+    icon: ChartColumn,
+    roles: ['boss'],
+    children: [{ to: '/reports/stats', label: '業績' }],
+  },
 ]
+const nav = computed(() => allNav.filter((g) => !g.roles || g.roles.includes(session.user.value?.role)))
 
 const route = useRoute()
 const router = useRouter()
@@ -78,7 +87,7 @@ function toggleGroup(item) {
 watch(
   () => route.path,
   () => {
-    for (const item of nav) {
+    for (const item of nav.value) {
       if (item.children && isGroupActive(item)) openGroups.value.add(item.label)
     }
   },
@@ -119,7 +128,6 @@ function handleResize() {
 const status = ref('checking') // checking | ok | error
 
 // ── 使用者選單（avatar；目前無 auth，是佔位＋之後接使用者的接縫）──
-const session = useSession()
 const userMenuOpen = ref(false)
 async function doLogout() {
   userMenuOpen.value = false
@@ -159,7 +167,7 @@ onBeforeUnmount(() => {
            px-5 讓熊頭 logo 的左緣＝下方選單 icon 的左緣（nav 的 p-2 + px-3 = 20px），
            整條側欄共用同一條「icon 軌」。寬度 w-44 是抓「6 字標籤 + 品牌字」的下限一起定的。 -->
       <RouterLink
-        to="/quotations"
+        to="/"
         title="lean-erp · 報價系統"
         class="flex h-14 shrink-0 cursor-pointer items-center gap-3 overflow-hidden border-b border-border text-left transition-opacity hover:opacity-70"
         :class="expanded ? 'justify-start px-5' : 'justify-center'"

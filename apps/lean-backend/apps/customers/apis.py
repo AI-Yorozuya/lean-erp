@@ -6,13 +6,13 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from ninja import Router, Schema
 from ninja.errors import HttpError
-from ninja.security import django_auth
 
 from apps._common.pagination import paginate
+from apps._common.roles import sales_only
 
 from .models import Customer
 
-router = Router(tags=['customers'], auth=django_auth)
+router = Router(tags=['customers'], auth=sales_only)  # 銷售管理：業務
 
 
 class CustomerIn(Schema):

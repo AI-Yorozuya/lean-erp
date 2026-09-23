@@ -13,16 +13,16 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router, Schema
 from ninja.errors import HttpError
-from ninja.security import django_auth
 
 from apps._common.pagination import paginate
+from apps._common.roles import sales_only
 from apps.customers.models import Customer
 
 from . import services
 from .models import Quotation
 from .pdf import render_quotation
 
-router = Router(tags=['quotations'], auth=django_auth)
+router = Router(tags=['quotations'], auth=sales_only)  # 銷售管理：業務
 
 
 class ItemIn(Schema):

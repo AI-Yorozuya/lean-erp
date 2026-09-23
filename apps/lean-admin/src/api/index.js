@@ -57,4 +57,8 @@ export const updateQuotation = (id, payload) => data(http.put(`/quotations/${id}
 export const exportQuotationPdf = (id) =>
   http.post(`/quotations/${id}/pdf`, null, { responseType: 'blob' }).then((res) => res.data)
 
+// ── 報表分析（老闆）──
+// GET /api/v1/reports/stats → [{ month: '2026-09-01', quote_count, quote_total }]，新的月份在前
+export const getStats = () => data(http.get('/reports/stats'))
+
 export default http
