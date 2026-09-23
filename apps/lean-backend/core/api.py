@@ -12,6 +12,7 @@ from ninja import NinjaAPI
 from apps.accounts.apis import router as auth_router
 from apps.customers.apis import router as customers_router
 from apps.health.apis import router as health_router
+from apps.orders.apis import router as orders_router
 from apps.products.apis import router as products_router
 from apps.quotations.apis import router as quotations_router
 
@@ -27,3 +28,4 @@ api.add_router('/auth', auth_router)
 api.add_router('/customers', customers_router)
 api.add_router('/products', products_router)
 api.add_router('/quotations', quotations_router)
+api.add_router('/orders', orders_router)

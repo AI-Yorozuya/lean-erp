@@ -10,10 +10,12 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-dev --frozen
 
-# netcat 給 entrypoint.sh 等 DB 用；postgresql-client 方便除錯。
+# netcat 給 entrypoint.sh 等 DB 用；postgresql-client 方便除錯；
+# fonts-wqy-zenhei 是報價單 PDF 內嵌的中文字型（apps/quotations/pdf.py）。
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     netcat-traditional \
+    fonts-wqy-zenhei \
     && rm -rf /var/lib/apt/lists/*
 
 # 再複製其餘程式碼。

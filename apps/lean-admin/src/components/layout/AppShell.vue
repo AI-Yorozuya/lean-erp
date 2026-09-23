@@ -12,8 +12,9 @@ import { ref, watch, nextTick, onBeforeMount, onMounted, onBeforeUnmount } from 
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 // 選單 icon 一律取「同一套 lucide、視覺重量相近的實心輪廓物件」——參 top-admin 的
 // constants/icons.js（避免混入 Activity 那種稀疏脈衝線，破壞整體一致性）。
-import { CalendarCheck, Users, ChevronDown, ChevronsLeft, ChevronsRight, User, FileText } from '@lucide/vue'
+import { ChevronDown, ChevronsLeft, ChevronsRight, User, FileText, ClipboardList, LogOut } from '@lucide/vue'
 import { getHealth } from '@/api'
+import { useSession } from '@/session'
 import HealthBadge from '@/components/HealthBadge.vue'
 import Toaster from '@/components/Toaster.vue'
 // 品牌標：忍者熊頭徽章（換店名時改下面 template 的字；圖要換就換這個 import）。
@@ -23,8 +24,8 @@ import bearBadge from '@/assets/bearhead_badge.png'
 // 標籤設計上限：中文 6 字（側欄寬度就是抓這個預算 + logo 一起定的）。
 // 三張表的頁面照 intents/ 逐塊長出來後掛在這。
 const nav = [
-  { to: '/', label: '首頁', icon: Users },
   { to: '/quotations', label: '報價單', icon: FileText },
+  { to: '/orders', label: '訂單', icon: ClipboardList },
 ]
 
 const route = useRoute()
@@ -110,7 +111,13 @@ function handleResize() {
 const status = ref('checking') // checking | ok | error
 
 // ── 使用者選單（avatar；目前無 auth，是佔位＋之後接使用者的接縫）──
+const session = useSession()
 const userMenuOpen = ref(false)
+async function doLogout() {
+  userMenuOpen.value = false
+  await session.logout()
+  router.push({ name: 'login' })
+}
 const userMenuRef = ref(null)
 function onClickOutside(e) {
   if (userMenuRef.value && !userMenuRef.value.contains(e.target)) userMenuOpen.value = false
@@ -144,7 +151,7 @@ onBeforeUnmount(() => {
            px-5 讓熊頭 logo 的左緣＝下方選單 icon 的左緣（nav 的 p-2 + px-3 = 20px），
            整條側欄共用同一條「icon 軌」。寬度 w-44 是抓「6 字標籤 + 品牌字」的下限一起定的。 -->
       <RouterLink
-        to="/"
+        to="/quotations"
         title="lean-erp · 報價成交"
         class="flex h-14 shrink-0 cursor-pointer items-center gap-3 overflow-hidden border-b border-border text-left transition-opacity hover:opacity-70"
         :class="expanded ? 'justify-start px-5' : 'justify-center'"
@@ -237,8 +244,8 @@ onBeforeUnmount(() => {
           <div ref="userMenuRef" class="relative">
             <button
               type="button"
-              title="訪客（尚未登入）"
-              aria-label="使用者選單：訪客（尚未登入）"
+              :title="session.user.value?.display_name ?? '訪客'"
+              :aria-label="'使用者選單：' + (session.user.value?.display_name ?? '訪客')"
               :aria-expanded="userMenuOpen"
               class="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground active:scale-95"
               :class="userMenuOpen ? 'ring-2 ring-ring ring-offset-2' : ''"
@@ -254,8 +261,11 @@ onBeforeUnmount(() => {
               leave-to-class="-translate-y-1 scale-95 opacity-0"
             >
               <div v-if="userMenuOpen" class="absolute top-full right-0 z-50 mt-2 min-w-44 origin-top-right rounded-md border border-border bg-card py-1 shadow-lg">
-                <div class="border-b border-border px-4 py-2 text-sm font-medium text-foreground">訪客</div>
-                <div class="px-4 py-2 text-xs text-muted-foreground">尚未登入 · auth 之後在這接使用者選單</div>
+                <div class="border-b border-border px-4 py-2 text-sm font-medium text-foreground">{{ session.user.value?.display_name ?? '訪客' }}</div>
+                <div class="px-4 pt-1 pb-1 text-xs text-muted-foreground">{{ session.user.value?.username }}</div>
+                <button type="button" class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted" @click="doLogout">
+                  <LogOut class="size-4" /> 登出
+                </button>
               </div>
             </transition>
           </div>

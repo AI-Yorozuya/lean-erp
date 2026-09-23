@@ -30,6 +30,7 @@ class Quotation(TimeStampedModel):
     payment_terms = models.CharField('付款條件', max_length=100, blank=True,
                                      default='完工後三日內付款')
     note = models.TextField('備註', blank=True, default='')
+    sent_on = models.DateField('送出日', null=True, blank=True)  # 送出時蓋；收回清掉，再送出蓋新的
 
     @property
     def total(self) -> int:
@@ -46,6 +47,11 @@ class Quotation(TimeStampedModel):
     @property
     def is_expired(self) -> bool:
         return self.days_left is not None and self.days_left < 0
+
+    @property
+    def active_order(self):
+        """還沒作廢的那張訂單（一張報價只轉一張；作廢的不算）。"""
+        return self.orders.exclude(status='void').first()
 
     def __str__(self):
         return self.no

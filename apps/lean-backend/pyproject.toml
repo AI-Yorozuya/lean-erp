@@ -22,6 +22,7 @@ dependencies = [
     # 非同步任務：celery worker + redis broker（local 與 prod 同構，見 core/celery.py）
     "celery>=5.3",
     "redis>=5.0",
+    "reportlab>=4.2",
 ]
 
 [dependency-groups]

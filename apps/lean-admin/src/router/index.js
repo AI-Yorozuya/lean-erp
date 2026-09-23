@@ -1,17 +1,16 @@
-// 後台路由。
-//
-// 教學重點（怎麼加一頁）：
-//   1) 在 src/views/ 新增一個 .vue（例如 UsersView.vue）。
-//   2) 在下面 routes 陣列加一筆 { path: '/users', component: () => import('@/views/UsersView.vue') }。
-//      用 () => import(...) 是 lazy load：進到該頁才下載，首頁更快。
+// 後台路由。報價單詳細頁一個檔管開新單／檢視／編輯三個模式（照 ns/top：同一個骨架，只換可編輯的格子）。
 import { createRouter, createWebHistory } from 'vue-router'
+import { useSession } from '@/session'
 
 const routes = [
-  { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
-  // 原型（點畫面站）：假資料、簽架構圖前可整檔重寫
+  { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
+  { path: '/', redirect: '/quotations' },
   { path: '/quotations', name: 'quotations', component: () => import('@/views/QuotationListView.vue') },
-  { path: '/quotations/new', name: 'quotation-new', component: () => import('@/views/QuotationNewView.vue') },
-  // 新頁面路由加在這（客戶 / 報價單 / 訂單照 intents/ 逐塊長出來）
+  { path: '/quotations/new', name: 'quotation-new', component: () => import('@/views/QuotationDetailView.vue') },
+  { path: '/quotations/:id', name: 'quotation-detail', component: () => import('@/views/QuotationDetailView.vue') },
+  { path: '/quotations/:id/edit', name: 'quotation-edit', component: () => import('@/views/QuotationDetailView.vue') },
+  { path: '/orders', name: 'orders', component: () => import('@/views/OrderListView.vue') },
+  { path: '/orders/:id', name: 'order-detail', component: () => import('@/views/OrderDetailView.vue') },
 ]
 
 const router = createRouter({
@@ -19,16 +18,11 @@ const router = createRouter({
   routes,
 })
 
-// ──────────────────────────────────────────────────────────────
-// AUTH 接縫（目前刻意留空）
-// 後台是最需要登入/權限的地方。之後在這裡加一個 beforeEach 守衛：
-//   - 檢查登入狀態（token / session），未登入就 router.push('/login')
-//   - 後端對應的 auth 接縫在 lean-backend 的 core/api.py（NinjaAPI auth=...）
-// 例：
-//   router.beforeEach((to) => {
-//     const isLoggedIn = /* 讀 token */ false
-//     if (!isLoggedIn && to.name !== 'login') return { name: 'login' }
-//   })
-// ──────────────────────────────────────────────────────────────
+// 登入守衛：除了標 public 的頁，沒登入就轉去 /login，登入後回原頁。
+router.beforeEach(async (to) => {
+  if (to.meta.public) return true
+  if (!(await useSession().ensure())) return { name: 'login', query: { next: to.fullPath } }
+  return true
+})
 
 export default router

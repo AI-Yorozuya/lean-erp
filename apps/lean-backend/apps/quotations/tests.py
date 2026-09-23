@@ -280,3 +280,43 @@ class EndpointAuthTests(TestCase):
                                 r.status_code, 401,
                                 f'{method} {template} 沒擋匿名——router 忘了掛 auth？')
         self.assertEqual(self.PUBLIC - seen, set(), '白名單列了已經不存在的端點')
+
+
+class ChangeRecordPrincipleTests(TestCase):
+    """架構圖原則 2、3、4：送出後改、動別人的單、狀態退回——都要留紀錄。"""
+
+    def setUp(self):
+        from apps._common.testing import make_quotation
+        self.owner = make_user('amy')
+        self.other = make_user('ben')
+        self.make = make_quotation
+
+    def _put(self, user, q, qty):
+        c = Client()
+        c.force_login(user)
+        return c.put(f'{API}/{q.id}/items', {'items': [{'name': 'A', 'qty': qty, 'unit_price': 100}]},
+                     content_type='application/json')
+
+    def test_principle_2_edit_after_send_always_recorded(self):
+        q = self.make(self.owner, items=[{'name': 'A', 'qty': 1, 'unit_price': 100}],
+                      status=Quotation.Status.SENT)
+        for qty in (2, 3, 4):
+            self._put(self.owner, q, qty)
+        self.assertEqual(q.logs.filter(action='改明細').count(), 3)
+
+    def test_principle_3_editing_someone_elses_draft_recorded(self):
+        q = self.make(self.owner, items=[{'name': 'A', 'qty': 1, 'unit_price': 100}])
+        self._put(self.owner, q, 2)             # 負責人自己改草稿：不記
+        self.assertEqual(q.logs.count(), 0)
+        self._put(self.other, q, 3)             # 別人動：一定記，而且記的是他
+        self.assertEqual(q.logs.count(), 1)
+        self.assertEqual(q.logs.first().actor, self.other)
+
+    def test_principle_4_every_step_back_is_recorded(self):
+        q = self.make(self.owner)
+        c = Client()
+        c.force_login(self.owner)
+        for act in ('send', 'recall', 'send', 'win', 'reopen', 'lose', 'reopen'):
+            self.assertEqual(c.post(f'{API}/{q.id}/{act}').status_code, 200, act)
+        self.assertEqual(list(q.logs.order_by('id').values_list('action', flat=True)),
+                         ['送出', '收回', '送出', '點成交', '點錯改回', '點沒成', '點錯改回'])
