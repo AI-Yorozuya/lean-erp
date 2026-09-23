@@ -2,9 +2,9 @@
 # 跑法（repo 根目錄）：docker compose -f infra/docker-compose.local.yml up --build -d
 #
 # 設計重點：
-# 0. name 固定 lean-stack：專案名預設會取「compose 檔所在目錄名」，這檔在 infra/ 底下，
+# 0. name 固定 lean-erp：專案名預設會取「compose 檔所在目錄名」，這檔在 infra/ 底下，
 #    不釘死的話專案名會變 infra，container/volume 名跟著改，等於孤立掉舊的 DB volume
-#    （lean-stack_lean-stack-pg-data）。釘死 name 讓身份不隨檔案位置漂移。
+#    （lean-erp_lean-erp-pg-data）。釘死 name 讓身份不隨檔案位置漂移。
 # 1. dev/prod parity：本機就跑「真 redis + 真 worker」，不開 celery eager ——
 #    eager 會藏掉只有真 worker 才會炸的 async bug，那正是「demo 會動、上 prod 垮」的牆。
 # 2. 前端也收進 compose：整個 app 的狀態在 Docker Desktop 一眼看完（綠燈=活著），
@@ -13,7 +13,7 @@
 #    留在容器的匿名 volume，不污染 host、也不被 host 蓋掉）。
 # 4. build context / bind mount 路徑相對「compose 檔所在目錄」(infra/)，所以是 ../apps/...
 #    （與 docker-compose.prod.yml 同一套相對路徑慣例）。
-name: lean-stack
+name: lean-erp
 
 services:
   postgres:
@@ -27,7 +27,7 @@ services:
       # 同機開第二份 checkout 時覆寫：LEAN_PG_PORT=5435（並配 `docker compose -p <別名>` 免搶 container/volume）。
       - "${LEAN_PG_PORT:-5434}:5432"
     volumes:
-      - lean-stack-pg-data:/var/lib/postgresql/data
+      - lean-erp-pg-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d lean_stack"]
       interval: 5s
@@ -108,21 +108,6 @@ services:
     depends_on:
       - backend
 
-  # ── web 前端（對外門市 storefront）：跟 admin 同一套，讀同一個後端 API ──
-  # 極簡櫥窗：一頁商品 + 假購物車，示範「改後台 → 前台跟著變」。
-  web:
-    image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host"
-    environment:
-      VITE_API_PROXY_TARGET: http://backend:8000
-    ports:
-      - "${LEAN_WEB_PORT:-5175}:5175"
-    volumes:
-      - ../apps/lean-web:/app
-      - /app/node_modules
-    depends_on:
-      - backend
 
 volumes:
-  lean-stack-pg-data:
+  lean-erp-pg-data:

@@ -84,6 +84,38 @@ DATABASES = {
     'default': env.db('DATABASE_URL', default='postgres://postgres:postgres@localhost:5432/lean_stack'),
 }
 
+# ---- 連線池（psycopg3）---------------------------------------------------
+# 不開池的話 CONN_MAX_AGE=0（Django 預設）＝每個 request 開一條新連線、用完就關。
+# 本機實測 GET /products（400 筆、並發 4）：162 req/s、中位 23.2 ms
+#                              → 開池後：333 req/s、中位 11.1 ms。
+# localhost 沒有網路來回、沒有 TLS，已經是建連線最便宜的情況；正式環境只會差更多。
+#
+# ⚠ 不要改用 CONN_MAX_AGE 來省這筆。我們跑的是 ASGI（entrypoint.sh：dev 是 uvicorn、
+# prod 是 gunicorn + UvicornWorker，兩邊都吃 core.asgi）：
+#   - DB 連線存在 thread-local（django/utils/connection.py 的 Local(thread_critical=True)）
+#   - 但 ASGIHandler.__call__ 每個 request 都包一層 asgiref 的 ThreadSensitiveContext，
+#     它結束時會 shutdown 自己的 executor —— 等於每個 request 跑在一條新的 thread
+#   - CONN_MAX_AGE > 0 時 close_old_connections 不會關掉還沒到期的連線，thread 卻已經
+#     死了 → 連線變孤兒，只能等 60 秒到期，期間一路堆積
+# 本機實測（才 1 個 worker、並發 8）：連線數衝到 98，撞上 postgres max_connections，
+# 240 筆請求裡 25 筆變成 500 "sorry, too many clients already"。WSGI 沒這問題，因為
+# 同一條 thread 會回來重用連線 —— 所以這是 ASGI 專屬的坑，不是 CONN_MAX_AGE 本身壞掉。
+#
+# 池子沒這問題：DatabaseWrapper._connection_pools 是 class attribute，池活在 process 層、
+# 被 max_size 封頂，跟有幾條 request thread 無關。上限＝worker 數 × max_size（prod 2×4=8）。
+# 池與 CONN_MAX_AGE != 0 互斥，同時設會 ImproperlyConfigured。
+#
+# DB_POOL=0 是緊急關閉閥：prod 萬一池子出狀況，只改 .env 就能退回「每 request 開新連線」
+# 的舊行為，不必回退程式碼。
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+if env.bool('DB_POOL', default=True):
+    DATABASES['default'].setdefault('OPTIONS', {})['pool'] = {
+        'min_size': env.int('DB_POOL_MIN', default=2),
+        'max_size': env.int('DB_POOL_MAX', default=4),
+        # 池子被借光時等多久才放棄（秒）。psycopg 預設 30 太長，request 會卡著不回。
+        'timeout': 10,
+    }
+
 # ---- 非同步任務 / Celery --------------------------------------------------
 # broker（派工佇列）與 result backend 都用 redis。
 # 關鍵：local 與 prod 走「同一條設定路徑」—— 只差 env 裡 redis 的 host。

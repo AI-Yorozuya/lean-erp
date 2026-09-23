@@ -6,7 +6,7 @@
 set -e
 
 echo "=================================="
-echo "Starting lean-stack ($*)"
+echo "Starting lean-erp ($*)"
 echo "=================================="
 
 # 等 PostgreSQL 開好（compose 裡 service 名就是 postgres，port 5432）。
@@ -26,15 +26,12 @@ fi
 echo "Running migrations..."
 uv run python manage.py migrate --noinput
 
-# 本機開發（DEBUG）→ 灌擬真示範資料（會員＋訂單），第一次起來就有東西看。
-# 指令冪等（已有訂單自己跳過），所以每次開機都跑也安全。
+# 本機開發（DEBUG）→ 灌示範資料（dev 帳號＋示範商品＋示範客戶），第一次起來就有東西看。
+# 指令冪等（已有就跳過），所以每次開機都跑也安全。
 # prod 不灌：entrypoint 是 local/prod 共用，這裡用 DEBUG 擋住。
 if [ "${DEBUG}" = "True" ] || [ "${DEBUG}" = "true" ] || [ "${DEBUG}" = "1" ]; then
-  echo "Seeding booking schedule (DEBUG only)..."
-  # main＝預約垂直：種子開機灌的是示範班表（冪等，已有班表就跳過）。
-  # 零售示範資料（hero 測試客＋10 商品）不再自動灌——預約店的客人頁不該有門市訪客；
-  # 要示範零售模組時手動跑：uv run python manage.py seed_demo
-  uv run python manage.py seed_booking
+  echo "Seeding demo data (DEBUG only)..."
+  uv run python manage.py seed_demo
 fi
 
 # DEBUG=True（本機開發）→ uvicorn --reload：改 code 自動重載（需掛 source volume，見 local compose）。

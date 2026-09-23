@@ -2,8 +2,8 @@
 // ⚠ 原型（converge-intent 點畫面站產物）：假資料寫死、不碰 API；簽架構圖前可整檔重寫。
 //    骨架照 ~/booking OrderDetailView（create 模式）：header 返回｜分隔線｜標題＋框線描述卡＋明細 3-table。
 //    報價 domain 差異：品項「自由填」（不掛商品主檔——意圖收斂拍板：主幹先行）。
-import { computed, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, reactive, ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Plus, X, Search } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,6 @@ import NumberInput from '@/components/NumberInput.vue'
 import PillButton from '@/components/PillButton.vue'
 import CustomerSelectDialog from '@/components/CustomerSelectDialog.vue'
 
-const router = useRouter()
 const money = (n) => Number(n).toLocaleString()
 
 const selected = ref(null)
@@ -33,28 +32,55 @@ const addItem = () => form.items.push({ name: '', quantity: 1, unit_price: 0 })
 const removeItem = (idx) => form.items.splice(idx, 1)
 
 const sent = ref(false)
-const formError = ref('')
-function send() {
-  if (!selected.value) { formError.value = '請選擇客戶'; return }
-  if (!form.items.length) { formError.value = '請至少填一行品項'; return }
-  formError.value = ''
+
+// ── 錯誤貼在出問題的那一格旁邊，不是頁面頂端一行紅字 ──
+// 頂端那種寫法在長表單裡等於沒說：使用者看得到「有錯」，看不到「錯在哪一格」。
+const errors = reactive({ customer: '', items: '' })
+const customerBtn = ref(null)
+const addItemBtn = ref(null)
+const focusEl = (r) => (r.value?.$el ?? r.value)?.focus?.()
+
+async function send() {
+  errors.customer = selected.value ? '' : '還沒選客戶'
+  errors.items = form.items.length ? '' : '至少要有一行品項'
+  // 送出後把游標移到第一個出錯的地方——不讓使用者自己在畫面上找紅字。
+  if (errors.customer || errors.items) {
+    await nextTick()
+    focusEl(errors.customer ? customerBtn : addItemBtn)
+    return
+  }
   sent.value = true
 }
+
+// ── 打到一半離開要攔 ──
+// 開新單這頁最容易把打了半天的單子弄丟：手滑點到側欄、按上一頁、關分頁都是。
+const initial = JSON.stringify({ selected: null, form })
+const dirty = computed(() => !sent.value && JSON.stringify({ selected: selected.value, form }) !== initial)
+
+onBeforeRouteLeave(() => (dirty.value ? window.confirm('這張報價單還沒送出，離開就不見了。確定要離開嗎？') : true))
+
+// 關分頁／重整走瀏覽器自己的攔截（訊息內容由瀏覽器決定，我們只負責說「有未存的東西」）。
+function warnOnUnload(e) { if (dirty.value) e.preventDefault() }
+onMounted(() => window.addEventListener('beforeunload', warnOnUnload))
+onUnmounted(() => window.removeEventListener('beforeunload', warnOnUnload))
 </script>
 
 <template>
-  <div class="flex min-h-full flex-col">
+  <!-- 包成 form：在任何一格按 Enter 都送得出去（瀏覽器內建行為，不用自己綁 keyup）。
+       注意——form 裡的 button 預設 type="submit"，所以不是送出的鈕都要寫 type="button"。 -->
+  <form class="flex min-h-full flex-col" @submit.prevent="send">
     <div class="flex shrink-0 flex-wrap items-center gap-2">
-      <Button variant="outline" size="sm" class="min-w-28 rounded-full" @click="router.push('/quotations')"><ArrowLeft class="size-4" /> 回上一頁</Button>
+      <!-- 回上一頁＝換頁，用連結；離開未存會被下面的 onBeforeRouteLeave 攔一次 -->
+      <Button as-child variant="outline" size="sm" class="min-w-28 rounded-full">
+        <RouterLink to="/quotations"><ArrowLeft class="size-4" /> 回上一頁</RouterLink>
+      </Button>
       <div class="bg-border mx-1 h-6 w-px shrink-0"></div>
       <h1 class="text-lg leading-none font-semibold tracking-tight">開新單</h1>
       <div class="ml-10 flex items-center gap-2">
         <span class="text-muted-foreground text-sm">報價操作：</span>
-        <PillButton :disabled="sent" @click="send">送出</PillButton>
+        <PillButton type="submit" :disabled="sent">送出</PillButton>
       </div>
     </div>
-
-    <p v-if="formError" class="text-destructive mt-4 shrink-0 text-sm">{{ formError }}</p>
 
     <div class="mt-5 flex min-h-0 flex-1 flex-col gap-4">
       <!-- 客戶卡（框線 descriptions）-->
@@ -64,10 +90,18 @@ function send() {
           <div class="flex border-b">
             <dt class="text-muted-foreground bg-muted/40 w-24 shrink-0 border-r px-3 py-2">客戶名稱</dt>
             <dd class="flex-1">
-              <button type="button" class="hover:bg-muted/30 flex h-9 w-full cursor-pointer items-center justify-between px-3 text-sm transition-colors" @click="showCustomerDialog = true">
+              <button
+                ref="customerBtn"
+                type="button"
+                class="hover:bg-muted/30 flex h-9 w-full cursor-pointer items-center justify-between px-3 text-sm transition-colors"
+                :aria-invalid="!!errors.customer"
+                :aria-describedby="errors.customer ? 'err-customer' : undefined"
+                @click="showCustomerDialog = true"
+              >
                 <span :class="selected ? 'font-medium' : 'text-muted-foreground'">{{ selected ? selected.name : '搜尋 / 選擇客戶…' }}</span>
                 <Search class="text-muted-foreground size-4" />
               </button>
+              <p v-if="errors.customer" id="err-customer" class="text-destructive px-3 pb-1.5 text-xs">{{ errors.customer }}</p>
             </dd>
           </div>
           <div class="flex border-b sm:border-l">
@@ -92,8 +126,11 @@ function send() {
       <!-- 明細卡（3-table；品名自由填）-->
       <div class="bg-card flex min-h-64 flex-1 flex-col overflow-hidden rounded-lg border shadow-sm">
         <div class="flex shrink-0 items-center justify-between border-b px-4 py-2.5">
-          <span class="text-sm font-semibold">明細</span>
-          <Button variant="outline" size="sm" @click="addItem"><Plus class="size-4" /> 加一行</Button>
+          <span class="text-sm font-semibold">
+            明細
+            <span v-if="errors.items" class="text-destructive ml-2 text-xs font-normal">{{ errors.items }}</span>
+          </span>
+          <Button ref="addItemBtn" type="button" variant="outline" size="sm" @click="addItem"><Plus class="size-4" /> 加一行</Button>
         </div>
         <div class="scroll-thin bg-card shrink-0 overflow-x-hidden overflow-y-scroll border-b">
           <Table class="table-fixed [&_th]:border-b-0">
@@ -119,7 +156,7 @@ function send() {
                 <TableCell class="text-center"><NumberInput v-model="item.quantity" :min="1" /></TableCell>
                 <TableCell class="text-right tabular-nums">{{ money(itemSubtotal(item)) }}</TableCell>
                 <TableCell class="text-center">
-                  <Button variant="ghost" size="icon-sm" class="text-destructive" @click="removeItem(idx)"><X class="size-4" /></Button>
+                  <Button type="button" variant="ghost" size="icon-sm" class="text-destructive" :aria-label="`刪除第 ${idx + 1} 行`" @click="removeItem(idx)"><X class="size-4" /></Button>
                 </TableCell>
               </TableRow>
               <TableRow v-if="!form.items.length" class="hover:bg-transparent">
@@ -152,5 +189,5 @@ function send() {
 
     <!-- 挑客戶：正牌搜尋＋分頁表格 dialog（原型用內建假資料；接真 API 時傳 fetcher/creator）-->
     <CustomerSelectDialog :open="showCustomerDialog" @update:open="(v) => (showCustomerDialog = v)" @select="(c) => (selected = c)" />
-  </div>
+  </form>
 </template>

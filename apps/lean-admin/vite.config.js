@@ -25,7 +25,9 @@ export default defineConfig({
         // 容器內跑（docker compose）時由 VITE_API_PROXY_TARGET 指到 compose 內網的 backend；
         // host 上直接跑則 fallback localhost。兩種起法共用同一份 config。
         target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
-        changeOrigin: true,
+        // 不改 Host：瀏覽器送來的 Origin（localhost:5174）要跟後端看到的 Host 一致，
+        // Django 的 CSRF 才認得這是同一個站；改了 Host 每個登入後的 POST 都會 403。
+        changeOrigin: false,
       },
     },
   },

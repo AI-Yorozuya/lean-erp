@@ -10,7 +10,9 @@ from ninja import Router
 
 from apps.health.schemas import HealthSchema
 
-router = Router(tags=['health'])  # tags 只是 API 文件分組用
+# auth=None 是明講「這支公開」，不是忘了掛：存活檢查要在登入之前就能打。
+# 別的 router 一律在 router 層掛 auth（見 apps/accounts/apis.py）。
+router = Router(tags=['health'], auth=None)  # tags 只是 API 文件分組用
 
 
 @router.get('', response=HealthSchema)

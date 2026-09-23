@@ -1,0 +1,17 @@
+{
+ "ran_at": "2026-08-26 23:15",
+ "results": {
+  "test_ac1_create_shows_total_status_no": "pass",
+  "test_ac2_change_qty_recomputes_and_total_not_writable": "pass",
+  "test_ac3_no_items_rejected_with_reason": "pass",
+  "test_ac4_zero_or_negative_qty_rejected": "pass",
+  "test_ac5_same_day_serial_numbers": "pass",
+  "test_ac6_expired_shown_status_unchanged": "pass",
+  "test_ac7_anonymous_blocked": "pass",
+  "test_ac8_owner_is_login_user_and_not_assignable": "pass",
+  "test_principle_1_total_equals_sum": "pass",
+  "test_principle_6_no_is_unique": "pass",
+  "test_principle_7_referenced_customer_undeletable": "pass",
+  "test_principle_8_snapshot_survives_product_change": "pass"
+ }
+}

@@ -12,7 +12,8 @@ dependencies = [
     "django-ninja>=1.6",
     "django-environ>=0.12",
     "django-cors-headers>=4.9",
-    "psycopg2-binary>=2.9",
+    # psycopg3 + 連線池：跑 ASGI 時不能用 CONN_MAX_AGE 撐持久連線（見 core/settings.py 的長註解）
+    "psycopg[binary,pool]>=3.2",
     "gunicorn>=23.0",
     "uvicorn[standard]>=0.38",
     # media 上傳：本機用檔案系統、prod 用 S3（USE_S3 切換，見 settings.py）

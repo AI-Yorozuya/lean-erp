@@ -35,6 +35,9 @@ const bodyScroll = ref(null)
 function syncHead() {
   if (headScroll.value && bodyScroll.value) headScroll.value.scrollLeft = bodyScroll.value.scrollLeft
 }
+
+// 捲的是表身這一層（不是 <main>）——頁面要記住捲動位置就得拿得到它。
+defineExpose({ bodyScroll })
 </script>
 
 <template>

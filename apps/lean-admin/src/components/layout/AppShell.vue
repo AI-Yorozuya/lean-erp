@@ -8,8 +8,8 @@
 //   - nav 支援兩種：單一項（有 to）與群組（有 children）。加頁往這個陣列加一筆。
 //   - active 用 derive（讀 route，不用 watch）；含 active 子項的群組自動展開。
 //   - 可收合（w-56 完整 ⇄ w-16 icon-only），狀態存 localStorage、小螢幕自動收。
-import { ref, watch, onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { ref, watch, nextTick, onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 // 選單 icon 一律取「同一套 lucide、視覺重量相近的實心輪廓物件」——參 top-admin 的
 // constants/icons.js（避免混入 Activity 那種稀疏脈衝線，破壞整體一致性）。
 import { CalendarCheck, Users, ChevronDown, ChevronsLeft, ChevronsRight, User, FileText } from '@lucide/vue'
@@ -28,6 +28,22 @@ const nav = [
 ]
 
 const route = useRoute()
+const router = useRouter()
+
+// ── 離開再回來，捲動位置要在原地 ──
+// 會捲的是下面那個 <main>（overflow-auto），不是視窗——所以 vue-router 的 savedPosition
+// 讀不到，得自己記。從清單捲到一半點進單子、按上一頁回來，眼睛要落回原本那一行。
+const mainRef = ref(null)
+const scrollMemory = new Map()
+router.beforeEach((to, from) => {
+  if (mainRef.value) scrollMemory.set(from.fullPath, mainRef.value.scrollTop)
+})
+router.afterEach((to) => {
+  nextTick(() => {
+    if (mainRef.value) mainRef.value.scrollTop = scrollMemory.get(to.fullPath) ?? 0
+  })
+})
+
 // active 用前綴比對：子路由（如 /orders/21、/orders/21/edit）也讓父項（訂單）保持 active。
 const isItemActive = (to) => route.path === to || route.path.startsWith(to + '/')
 const isGroupActive = (item) => item.children.some((c) => isItemActive(c.to))
@@ -127,36 +143,34 @@ onBeforeUnmount(() => {
       <!-- 品牌列（h-14 對齊頂 bar；整塊是連結，點了回站台入口 = 會員頁）。
            px-5 讓熊頭 logo 的左緣＝下方選單 icon 的左緣（nav 的 p-2 + px-3 = 20px），
            整條側欄共用同一條「icon 軌」。寬度 w-44 是抓「6 字標籤 + 品牌字」的下限一起定的。 -->
-      <button
-        type="button"
+      <RouterLink
+        to="/"
         title="lean-erp · 報價成交"
         class="flex h-14 shrink-0 cursor-pointer items-center gap-3 overflow-hidden border-b border-border text-left transition-opacity hover:opacity-70"
         :class="expanded ? 'justify-start px-5' : 'justify-center'"
-        @click="$router.push('/')"
       >
         <img :src="bearBadge" alt="lean-erp" class="size-8 shrink-0" />
         <span v-show="expanded" class="whitespace-nowrap text-[15px] font-semibold text-foreground">lean-erp</span>
-      </button>
+      </RouterLink>
 
       <!-- Menu -->
       <nav class="flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto p-2">
         <template v-for="item in nav" :key="item.label">
           <!-- 單一項 -->
-          <RouterLink v-if="item.to" v-slot="{ isActive }" :to="item.to" custom>
-            <button
-              :title="item.label"
-              :class="[
-                'flex w-full items-center rounded-md text-sm transition-colors',
-                expanded ? 'gap-3 px-3 py-2' : 'justify-center px-0 py-2.5',
-                isItemActive(item.to)
-                  ? 'relative bg-muted font-medium text-foreground before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              ]"
-              @click="$router.push(item.to)"
-            >
-              <component :is="item.icon" class="size-[18px] shrink-0" />
-              <span v-show="expanded" class="whitespace-nowrap">{{ item.label }}</span>
-            </button>
+          <RouterLink
+            v-if="item.to"
+            :to="item.to"
+            :title="item.label"
+            :class="[
+              'flex w-full items-center rounded-md text-sm transition-colors',
+              expanded ? 'gap-3 px-3 py-2' : 'justify-center px-0 py-2.5',
+              isItemActive(item.to)
+                ? 'relative bg-muted font-medium text-foreground before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            ]"
+          >
+            <component :is="item.icon" class="size-[18px] shrink-0" />
+            <span v-show="expanded" class="whitespace-nowrap">{{ item.label }}</span>
           </RouterLink>
 
           <!-- 群組（父 + 子）-->
@@ -181,18 +195,18 @@ onBeforeUnmount(() => {
 
             <!-- 子項（只在展開 + 群組打開時顯示）-->
             <div v-show="expanded && isGroupOpen(item)" class="mt-0.5 flex flex-col gap-0.5">
-              <RouterLink v-for="child in item.children" :key="child.to" :to="child.to" custom>
-                <button
-                  :class="[
-                    'flex w-full items-center rounded-md py-2 pl-11 pr-3 text-left text-sm transition-colors',
-                    isItemActive(child.to)
-                      ? 'relative bg-muted font-medium text-foreground before:absolute before:top-1/2 before:left-8 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                  ]"
-                  @click="$router.push(child.to)"
-                >
-                  <span class="whitespace-nowrap">{{ child.label }}</span>
-                </button>
+              <RouterLink
+                v-for="child in item.children"
+                :key="child.to"
+                :to="child.to"
+                :class="[
+                  'flex w-full items-center rounded-md py-2 pl-11 pr-3 text-left text-sm transition-colors',
+                  isItemActive(child.to)
+                    ? 'relative bg-muted font-medium text-foreground before:absolute before:top-1/2 before:left-8 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                ]"
+              >
+                <span class="whitespace-nowrap">{{ child.label }}</span>
               </RouterLink>
             </div>
           </template>
@@ -208,6 +222,8 @@ onBeforeUnmount(() => {
         <button
           type="button"
           :title="expanded ? '收合側邊欄' : '展開側邊欄'"
+          :aria-label="expanded ? '收合側邊欄' : '展開側邊欄'"
+          :aria-expanded="expanded"
           class="-ml-2 inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
           @click="toggle"
         >
@@ -222,6 +238,8 @@ onBeforeUnmount(() => {
             <button
               type="button"
               title="訪客（尚未登入）"
+              aria-label="使用者選單：訪客（尚未登入）"
+              :aria-expanded="userMenuOpen"
               class="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground active:scale-95"
               :class="userMenuOpen ? 'ring-2 ring-ring ring-offset-2' : ''"
               @click="userMenuOpen = !userMenuOpen"
@@ -244,7 +262,7 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <main class="main-content min-w-0 flex-1 overflow-auto p-5">
+      <main ref="mainRef" class="main-content min-w-0 flex-1 overflow-auto p-5">
         <slot />
       </main>
     </div>

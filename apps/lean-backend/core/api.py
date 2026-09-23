@@ -27,4 +27,3 @@ api.add_router('/auth', auth_router)
 api.add_router('/customers', customers_router)
 api.add_router('/products', products_router)
 api.add_router('/quotations', quotations_router)
-

@@ -49,7 +49,7 @@ const cellBase =
 
 <template>
   <div class="relative flex items-center justify-center gap-1">
-    <button :class="[cellBase, 'text-muted-foreground hover:bg-muted hover:text-foreground']" :disabled="page <= 1" title="上一頁" @click="go(page - 1)">
+    <button type="button" :class="[cellBase, 'text-muted-foreground hover:bg-muted hover:text-foreground']" :disabled="page <= 1" title="上一頁" aria-label="上一頁" @click="go(page - 1)">
       <ChevronLeft class="size-4" />
     </button>
 
@@ -57,6 +57,9 @@ const cellBase =
       <span v-if="p === '…'" class="text-muted-foreground flex size-8 items-center justify-center">…</span>
       <button
         v-else
+        type="button"
+        :aria-label="`第 ${p} 頁`"
+        :aria-current="p === page ? 'page' : undefined"
         :class="[cellBase, p === page ? 'bg-muted text-foreground font-semibold' : 'text-muted-foreground hover:bg-muted hover:text-foreground']"
         @click="go(p)"
       >
@@ -64,7 +67,7 @@ const cellBase =
       </button>
     </template>
 
-    <button :class="[cellBase, 'text-muted-foreground hover:bg-muted hover:text-foreground']" :disabled="page >= totalPages" title="下一頁" @click="go(page + 1)">
+    <button type="button" :class="[cellBase, 'text-muted-foreground hover:bg-muted hover:text-foreground']" :disabled="page >= totalPages" title="下一頁" aria-label="下一頁" @click="go(page + 1)">
       <ChevronRight class="size-4" />
     </button>
 
@@ -73,7 +76,8 @@ const cellBase =
       <span class="relative inline-flex items-center">
         <select
           :value="pageSize"
-          class="border-input bg-card focus-visible:ring-ring appearance-none rounded-md border py-1 pr-7 pl-2.5 text-sm tabular-nums focus-visible:ring-1 focus-visible:outline-none"
+          aria-label="每頁筆數"
+          class="border-input bg-card text-foreground focus-visible:ring-ring appearance-none rounded-md border py-1 pr-7 pl-2.5 text-sm tabular-nums focus-visible:ring-1 focus-visible:outline-none"
           @change="emit('update:pageSize', Number($event.target.value))"
         >
           <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>

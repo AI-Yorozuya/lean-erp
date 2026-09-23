@@ -5,7 +5,11 @@ from ninja import Router, Schema
 from ninja.errors import HttpError
 from ninja.security import django_auth
 
-router = Router(tags=['auth'])
+# 門預設是關的：router 層掛 auth，之後新增的端點沒寫 auth 就是「要登入」。
+# 反過來寫（router 不掛、每支自己掛）漏一支就是公開端點，而且從 code 上看不出來——
+# 白名單漏列正是 ns-erp 2026-08-27 那顆 logout 匿名可打的成因。公開的只有下面兩支，
+# 各自用 auth=None 明講。
+router = Router(tags=['auth'], auth=django_auth)
 
 
 class LoginIn(Schema):
@@ -36,12 +40,12 @@ def login_view(request, data: LoginIn):
     return {'ok': True, 'display_name': user.shown_name}
 
 
-@router.post('/logout', auth=django_auth)
+@router.post('/logout')
 def logout_view(request):
     logout(request)
     return {'ok': True}
 
 
-@router.get('/me', auth=django_auth, response=MeOut)
+@router.get('/me', response=MeOut)
 def me(request):
     return {'username': request.user.username, 'display_name': request.user.shown_name}
